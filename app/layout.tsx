@@ -31,7 +31,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col fixed">
         <header className="z-10">
-          <nav className="navbar bg-base-100 shadow-sm">
+          <nav className="navbar bg-base-100 shadow-sm border-b">
             <Link href={"/"}>
               <Image className="rounded-full" src="/YÖRÜK.svg" alt="Logo" width={96} height={96} />
             </Link>
@@ -40,7 +40,7 @@ export default function RootLayout({
         <main className="w-screen">
           {children}
         </main>
-        <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4 fixed bottom-0">
+        <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4 fixed bottom-0 border-t">
           <aside>
             <Link className="link link-hover" href="https://github.com/MetaMsa">Mehmet Serhat ASLAN</Link>
           </aside>
