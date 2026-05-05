@@ -1,3 +1,5 @@
+"use client";
+
 import { CircleX } from "lucide-react";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -9,13 +11,16 @@ interface CountryInfo {
 
 export default function Sidebar({ country, setIsDrawerOpen, setClickedD, setCountryName }: { country: string, setIsDrawerOpen: Dispatch<SetStateAction<boolean>>, setClickedD: Dispatch<any>, setCountryName: Dispatch<SetStateAction<string>> }) {
     const [countryInfo, setCountryInfo] = useState<CountryInfo | null>(null);
-    const [passport, setPassport] = useState<string>(() => {
-        try {
-            return localStorage.getItem("passport") || "Ordinary";
-        } catch {
-            return "Ordinary";
-        }
-    });
+    const [passport, setPassport] = useState<string>("Ordinary");
+
+    useEffect(() => {
+        const saved = localStorage.getItem("passport");
+        if (saved) setPassport(saved);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("passport", passport);
+    }, [passport]);
 
     useEffect(() => {
         const fetchCountryInfo = async () => {
@@ -25,9 +30,7 @@ export default function Sidebar({ country, setIsDrawerOpen, setClickedD, setCoun
         };
 
         fetchCountryInfo();
-
-        localStorage.setItem("passport", passport);
-    }, [country, passport]);
+    }, [country]);
 
     return (
         <aside
@@ -64,16 +67,16 @@ export default function Sidebar({ country, setIsDrawerOpen, setClickedD, setCoun
                 <div className="my-5">Pasaport Türü</div>
 
                 <div className="flex justify-between my-5">
-                    <button onClick={() => {setPassport("Ordinary")}}>
+                    <button onClick={() => { setPassport("Ordinary") }}>
                         <Image className={`${passport === "Ordinary" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Ordinary"} alt="Turkish Ordinary Passport" src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Turkish_Passport.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
                     </button>
-                    <button onClick={() => {setPassport("Special")}}>
+                    <button onClick={() => { setPassport("Special") }}>
                         <Image className={`${passport === "Special" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Special"} alt="Turkish Special Passport" src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Turkish_Passport_%28special%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
                     </button>
-                    <button onClick={() => {setPassport("Service")}}>
+                    <button onClick={() => { setPassport("Service") }}>
                         <Image className={`${passport === "Service" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Service"} alt="Turkish Service Passport" src="https://upload.wikimedia.org/wikipedia/commons/8/8d/Turkish_Passport_%28service%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
                     </button>
-                    <button onClick={() => {setPassport("Diplomatic")}}>
+                    <button onClick={() => { setPassport("Diplomatic") }}>
                         <Image className={`${passport === "Diplomatic" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Diplomatic"} alt="Turkish Diplomatic Passport" src="https://upload.wikimedia.org/wikipedia/commons/3/31/Turkish_Passport_%28diplomatic%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
                     </button>
                 </div>
