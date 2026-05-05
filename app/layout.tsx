@@ -41,9 +41,7 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4 fixed bottom-0 border-t">
-          <aside>
-            <Link className="link link-hover" href="https://github.com/MetaMsa">Mehmet Serhat ASLAN</Link>
-          </aside>
+          <Link className="link link-hover" href="https://github.com/MetaMsa">Mehmet Serhat ASLAN</Link>
         </footer>
       </body>
     </html>
