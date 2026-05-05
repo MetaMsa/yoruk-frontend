@@ -1,94 +1,166 @@
 "use client";
 
-import { CircleX } from "lucide-react";
+import { CircleX, Loader2, AlertCircle } from "lucide-react";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 
 interface CountryInfo {
     name: string;
     extract: string;
 }
 
-export default function Sidebar({ country, setIsDrawerOpen, setClickedD, setCountryName }: { country: string, setIsDrawerOpen: Dispatch<SetStateAction<boolean>>, setClickedD: Dispatch<any>, setCountryName: Dispatch<SetStateAction<string>> }) {
-    const [countryInfo, setCountryInfo] = useState<CountryInfo | null>(null);
-    const [passport, setPassport] = useState<string>("Ordinary");
+const PASSPORT_TYPES = [
+    { id: "Ordinary", label: "Umuma Mahsus", src: "https://upload.wikimedia.org/wikipedia/commons/1/1b/Turkish_Passport.svg" },
+    { id: "Special", label: "Hususi", src: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Turkish_Passport_%28special%29.svg" },
+    { id: "Service", label: "Hizmet", src: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Turkish_Passport_%28service%29.svg" },
+    { id: "Diplomatic", label: "Diplomatik", src: "https://upload.wikimedia.org/wikipedia/commons/3/31/Turkish_Passport_%28diplomatic%29.svg" },
+];
 
-    useEffect(() => {
-        const saved = localStorage.getItem("passport");
-        if (saved) setPassport(saved);
-    }, []);
+export default function Sidebar({ 
+    country, 
+    setIsDrawerOpen, 
+    setClickedD, 
+    setCountryName 
+}: { 
+    country: string, 
+    setIsDrawerOpen: Dispatch<SetStateAction<boolean>>, 
+    setClickedD: Dispatch<any>, 
+    setCountryName: Dispatch<SetStateAction<string>> 
+}) {
+    const [countryInfo, setCountryInfo] = useState<CountryInfo | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(false);
+    
+    const [passport, setPassport] = useState<string>(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("passport") || "Ordinary";
+        }
+        return "Ordinary";
+    });
 
     useEffect(() => {
         localStorage.setItem("passport", passport);
     }, [passport]);
 
     useEffect(() => {
+        if (!country) return;
+
+        const abortController = new AbortController();
+        
         const fetchCountryInfo = async () => {
-            const response = await fetch(`/api/country/${country}`)
-            const data = await response.json()
-            setCountryInfo(data);
+            setIsLoading(true);
+            setError(false);
+            try {
+                const response = await fetch(`/api/country/${country}`, { signal: abortController.signal });
+                if (!response.ok) throw new Error("Veri alınamadı");
+                const data = await response.json();
+                setCountryInfo(data);
+            } catch (err: any) {
+                if (err.name !== 'AbortError') {
+                    console.error("Fetch error:", err);
+                    setCountryInfo(null);
+                    setError(true);
+                }
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         fetchCountryInfo();
+        return () => abortController.abort();
     }, [country]);
 
+    const closeSidebar = useCallback(() => {
+        setIsDrawerOpen(false);
+        setClickedD(null);
+        setCountryName("");
+    }, [setIsDrawerOpen, setClickedD, setCountryName]);
+
+    if (!country) return null;
+
     return (
-        <aside
-            className="bg-white dark:bg-neutral-900 border-r border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-66 py-30 px-4">
+        <aside 
+            className="bg-white dark:bg-neutral-900 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
+            role="complementary"
+        >
+            <div className="p-4">
+                <div className="flex justify-end">
+                    <button 
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors group" 
+                        onClick={closeSidebar}
+                        aria-label="Kapat"
+                    >
+                        <CircleX size={24} className="text-slate-500 group-hover:text-red-500 transition-colors" />
+                    </button>
+                </div>
 
-            <div className="flex justify-end">
-                <button className="btn btn-ghost" onClick={() => {
-                    setIsDrawerOpen(false);
-                    setClickedD(null);
-                    setCountryName("");
-                }}>
-                    <CircleX />
-                </button>
+                {isLoading ? (
+                    <div className="flex flex-col justify-center items-center h-64 gap-3">
+                        <Loader2 className="animate-spin text-blue-500" size={32} />
+                        <span className="text-sm text-slate-500">Yükleniyor...</span>
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center p-6 text-center">
+                        <AlertCircle className="text-amber-500 mb-2" />
+                        <p className="text-sm text-slate-600">Ülke bilgisine ulaşılamadı.</p>
+                    </div>
+                ) : (
+                    <nav aria-label="Country Information">
+                        <h2 className="text-xl font-bold mb-4 border-b pb-2">{countryInfo?.name || country}</h2>
+                        
+                        <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
+                            <p className="line-clamp-[10] mb-3">
+                                {countryInfo?.extract || "Bu ülke hakkında detaylı bilgi bulunmamaktadır."}
+                            </p>
+                            {countryInfo?.name && (
+                                <Link 
+                                    href={`https://tr.wikipedia.org/wiki/${encodeURIComponent(countryInfo.name)}`} 
+                                    target="_blank" 
+                                    className="text-blue-500 font-medium hover:underline inline-flex items-center gap-1 mb-6"
+                                >
+                                    Daha Fazla Bilgi
+                                </Link>
+                            )}
+                        </div>
+
+                        <hr className="my-6 border-slate-200 dark:border-neutral-800" />
+
+                        <div className="mb-4 font-semibold text-sm">Pasaport Türünüz</div>
+                        <div className="grid grid-cols-4 gap-2 mb-6">
+                            {PASSPORT_TYPES.map((type) => (
+                                <button 
+                                    key={type.id}
+                                    title={type.label}
+                                    onClick={() => setPassport(type.id)}
+                                    className={`relative flex flex-col items-center transition-all p-2 rounded-lg border-2 ${
+                                        passport === type.id 
+                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30" 
+                                        : "border-transparent bg-slate-50 dark:bg-neutral-800 hover:border-slate-300"
+                                    }`}
+                                >
+                                    <Image 
+                                        width={36} 
+                                        height={50} 
+                                        alt={type.label} 
+                                        src={type.src}
+                                        className="object-contain"
+                                    />
+                                    <span className="text-[8px] mt-1 truncate w-full text-center">{type.label}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
+                            Vize Durumunu Sorgula
+                        </button>
+
+                        <p className="mt-4 text-[10px] text-slate-500 italic text-center">
+                            * Seçtiğiniz pasaport türüne göre vize bilgileri gösterilecektir.
+                        </p>
+                    </nav>
+                )}
             </div>
-
-            <nav aria-label="Primary sidebar navigation">
-                <ul className="space-y-1">
-                    <li>
-                        {countryInfo?.name}
-                    </li>
-                </ul>
-
-                <div className="mt-6 text-xs">
-                    <ul className="mt-2 space-y-0.5 h-20 truncate text-wrap text-slate-800 dark:text-slate-400 font-medium">
-                        <li>
-                            {countryInfo?.extract}
-                        </li>
-                    </ul>
-                    <p className="text-sm text-slate-600 dark:text-slate-500">
-                        <a href={`https://tr.wikipedia.org/wiki/${countryInfo?.name}`} target="_blank" rel="noopener noreferrer" className="link link-hover">Daha Fazla Bilgi</a>
-                    </p>
-                </div>
-
-                <div className="my-5">Pasaport Türü</div>
-
-                <div className="flex justify-between my-5">
-                    <button onClick={() => { setPassport("Ordinary") }}>
-                        <Image className={`${passport === "Ordinary" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Ordinary"} alt="Turkish Ordinary Passport" src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Turkish_Passport.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
-                    </button>
-                    <button onClick={() => { setPassport("Special") }}>
-                        <Image className={`${passport === "Special" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Special"} alt="Turkish Special Passport" src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Turkish_Passport_%28special%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
-                    </button>
-                    <button onClick={() => { setPassport("Service") }}>
-                        <Image className={`${passport === "Service" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Service"} alt="Turkish Service Passport" src="https://upload.wikimedia.org/wikipedia/commons/8/8d/Turkish_Passport_%28service%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
-                    </button>
-                    <button onClick={() => { setPassport("Diplomatic") }}>
-                        <Image className={`${passport === "Diplomatic" ? "ring-2 ring-blue-500" : ""}`} width={50} height={50} key={"Diplomatic"} alt="Turkish Diplomatic Passport" src="https://upload.wikimedia.org/wikipedia/commons/3/31/Turkish_Passport_%28diplomatic%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" />
-                    </button>
-                </div>
-
-                <button className="btn btn-primary w-full">
-                    Gönder
-                </button>
-
-                <div className="mt-3 text-xs text-slate-600 dark:text-slate-500">
-                    * Pasaport türünüzü seçtikten sonra "Gönder" butonuna basarak vize durumunuzu görebilirsiniz.
-                </div>
-            </nav>
         </aside>
-    )
+    );
 }
