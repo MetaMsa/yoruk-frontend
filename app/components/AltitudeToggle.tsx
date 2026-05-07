@@ -25,7 +25,7 @@ export default function AltitudeToggle({ globeRef }: { globeRef: any }) {
     }
 
     return (
-        <div className="absolute bottom-45 left-4 z-10 flex flex-col gap-2">
+        <div className="absolute bottom-22 left-2 z-10 flex flex-col gap-2">
             <button className="btn btn-outline" onClick={() => reduceAltitude()}>
                 +
             </button>

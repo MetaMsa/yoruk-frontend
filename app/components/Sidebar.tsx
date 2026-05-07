@@ -20,13 +20,11 @@ const PASSPORT_TYPES = [
 export default function Sidebar({ 
     country, 
     setIsDrawerOpen, 
-    setClickedD, 
-    setCountryName 
+    setClickedD
 }: { 
     country: string, 
     setIsDrawerOpen: Dispatch<SetStateAction<boolean>>, 
-    setClickedD: Dispatch<any>, 
-    setCountryName: Dispatch<SetStateAction<string>> 
+    setClickedD: Dispatch<string | null>
 }) {
     const [countryInfo, setCountryInfo] = useState<CountryInfo | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -74,20 +72,20 @@ export default function Sidebar({
     const closeSidebar = useCallback(() => {
         setIsDrawerOpen(false);
         setClickedD(null);
-        setCountryName("");
-    }, [setIsDrawerOpen, setClickedD, setCountryName]);
+        localStorage.removeItem("clickedD");
+    }, [setIsDrawerOpen, setClickedD]);
 
     if (!country) return null;
 
     return (
         <aside 
-            className="bg-white dark:bg-neutral-900 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
+            className="bg-base-100 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
             role="complementary"
         >
             <div className="p-4">
                 <div className="flex justify-end">
                     <button 
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors group" 
+                        className="p-2 hover:bg-base-100 rounded-full transition-colors group" 
                         onClick={closeSidebar}
                         aria-label="Kapat"
                     >
@@ -110,7 +108,7 @@ export default function Sidebar({
                         <h2 className="text-xl font-bold mb-4 border-b pb-2">{countryInfo?.name || country}</h2>
                         
                         <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
-                            <p className="line-clamp-[10] mb-3">
+                            <p className="line-clamp-10 mb-3">
                                 {countryInfo?.extract || "Bu ülke hakkında detaylı bilgi bulunmamaktadır."}
                             </p>
                             {countryInfo?.name && (
@@ -135,8 +133,8 @@ export default function Sidebar({
                                     onClick={() => setPassport(type.id)}
                                     className={`relative flex flex-col items-center transition-all p-2 rounded-lg border-2 ${
                                         passport === type.id 
-                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30" 
-                                        : "border-transparent bg-slate-50 dark:bg-neutral-800 hover:border-slate-300"
+                                        ? "border-base-500" 
+                                        : "border-transparent hover:border-base-300"
                                     }`}
                                 >
                                     <Image 
@@ -151,7 +149,7 @@ export default function Sidebar({
                             ))}
                         </div>
 
-                        <button className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
+                        <button className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
                             Vize Durumunu Sorgula
                         </button>
 

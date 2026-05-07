@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import dataset from "@/dataset.json";
@@ -17,11 +17,15 @@ export default function Home() {
   const [countries] = useState<FeatureCollection<Geometry, GeoJsonProperties>>(
     (dataset as unknown) as FeatureCollection<Geometry, GeoJsonProperties>
   );
-  const [hoverD, setHoverD] = useState<any>(null);
-  const [clickedD, setClickedD] = useState<any>(null);
+  const [hoverAdmin, setHoverAdmin] = useState<string | null>(null);
+  const [clickedD, setClickedD] = useState<string | null>((() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("clickedD") || "";
+    }
+    return "";
+  })());
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [countryName, setCountryName] = useState<string>("");
-
+  const [countryTranslation, setCountryTranslation] = useState<string>("");
   const globeRef = useRef<any>(null);
 
   const focusPolygon = (feature: any) => {
@@ -42,6 +46,42 @@ export default function Home() {
     );
   };
 
+  useEffect(() => {
+    if (clickedD) {
+      localStorage.setItem("clickedD", clickedD);
+    }
+  }, [clickedD]);
+
+  const translationCache = useRef<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    const updateTranslation = async () => {
+      const key = clickedD || "";
+      if (!key) {
+        setCountryTranslation("");
+        return;
+      }
+
+      const cached = translationCache.current.get(key);
+      if (cached) {
+        setCountryTranslation(cached);
+        return;
+      }
+
+      try {
+        const translated = await translate(key, "tr");
+        translationCache.current.set(key, translated);
+        setCountryTranslation(translated);
+      } catch {
+        setCountryTranslation(key);
+      }
+    };
+
+    updateTranslation();
+  }, [clickedD]);
+
+  const countryName = countryTranslation || clickedD || "";
+
   return (
     <div>
       <Globe
@@ -49,41 +89,53 @@ export default function Home() {
         polygonsData={countries.features}
         polygonCapColor={(d: any) => {
           if (d.properties.ADMIN === "Turkey") {
-            return "rgba(227, 10, 23, 0.9)";
+            return "rgba(227, 10, 23, 1)";
           }
 
-          if (d === clickedD) {
+          if (d.properties.ADMIN === clickedD) {
             return "rgb(0, 81, 255)";
           }
 
-          if (d === hoverD) {
-            return "rgba(59, 130, 246, 0.9)";
+          if (d.properties.ADMIN === hoverAdmin) {
+            return "rgba(59, 130, 246, 1)";
           }
 
-          return "rgba(146, 121, 121, 0.7)";
+          return "rgba(146, 121, 121, 1)";
         }}
         polygonStrokeColor={() => "#ffffff"}
         polygonSideColor={() => "rgba(0,0,0,0.15)"}
-        polygonAltitude={(d: any) => (d === hoverD ? 0.05 : 0.01)}
+        polygonAltitude={(d: any) =>
+          d.properties.ADMIN === hoverAdmin ? 0.05 : 0
+        }
         onPolygonHover={(polygon: any) => {
           if (!polygon || polygon.properties.ADMIN === "Antarctica") {
-            setHoverD(null);
+            setHoverAdmin(null);
             return;
           }
 
-          setHoverD(polygon);
+          setHoverAdmin(polygon.properties.ADMIN);
         }}
         onPolygonClick={async (polygon: any) => {
-          setClickedD(polygon);
+          setClickedD(polygon.properties.ADMIN);
           focusPolygon(polygon);
-
-          const translated = await translate(polygon.properties.ADMIN, "tr");
-          setCountryName(translated);
 
           setIsDrawerOpen(true);
         }}
         onGlobeReady={() => {
           if (!globeRef.current) return;
+
+          const saved = localStorage.getItem("clickedD");
+          if (saved) {
+            const found = countries.features.find(
+              f => f.properties?.ADMIN === saved
+            );
+            if (found) {
+              setClickedD(found?.properties?.ADMIN);
+              focusPolygon(found);
+              setIsDrawerOpen(true);
+            }
+            return;
+          }
 
           globeRef.current.pointOfView(
             {
@@ -95,13 +147,15 @@ export default function Home() {
           )
         }}
         globeOffset={isDrawerOpen ? [-125, 0] : [0, 0]}
+        showGlobe={false}
+        showAtmosphere={false}
+        backgroundColor="rgba(0,0,0,0)"
       />
       {isDrawerOpen && (
         <Sidebar
           country={countryName}
           setIsDrawerOpen={setIsDrawerOpen}
           setClickedD={setClickedD}
-          setCountryName={setCountryName}
         />
       )}
       <AltitudeToggle globeRef={globeRef} />
