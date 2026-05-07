@@ -1,6 +1,6 @@
 export default function AltitudeToggle({ globeRef }: { globeRef: any }) {
     const reduceAltitude = () => {
-        if (!globeRef.current || globeRef.current.pointOfView().altitude <= 1) return;
+        if (!globeRef.current || globeRef.current.pointOfView().altitude < 1) return;
 
         globeRef.current.pointOfView(
             {

@@ -2,8 +2,9 @@
 
 import { CircleX, Loader2, AlertCircle } from "lucide-react";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useEffect, useState, useCallback } from "react";
+import { Dispatch, SetStateAction, useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import translate from "translate";
 
 interface CountryInfo {
     name: string;
@@ -17,19 +18,19 @@ const PASSPORT_TYPES = [
     { id: "Diplomatic", label: "Diplomatik", src: "https://upload.wikimedia.org/wikipedia/commons/3/31/Turkish_Passport_%28diplomatic%29.svg" },
 ];
 
-export default function Sidebar({ 
-    country, 
-    setIsDrawerOpen, 
+export default function Sidebar({
+    clickedD,
+    setIsDrawerOpen,
     setClickedD
-}: { 
-    country: string, 
-    setIsDrawerOpen: Dispatch<SetStateAction<boolean>>, 
+}: {
+    clickedD: string | null,
+    setIsDrawerOpen: Dispatch<SetStateAction<boolean>>,
     setClickedD: Dispatch<string | null>
 }) {
     const [countryInfo, setCountryInfo] = useState<CountryInfo | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(false);
-    
+    const [countryTranslation, setCountryTranslation] = useState<string>("");
     const [passport, setPassport] = useState<string>(() => {
         if (typeof window !== "undefined") {
             return localStorage.getItem("passport") || "Ordinary";
@@ -37,20 +38,48 @@ export default function Sidebar({
         return "Ordinary";
     });
 
+    const translationCache = useRef<Map<string, string>>(new Map());
+
+    useEffect(() => {
+        const updateTranslation = async () => {
+            const key = clickedD || "";
+            if (!key) {
+                setCountryTranslation("");
+                return;
+            }
+
+            const cached = translationCache.current.get(key);
+            if (cached) {
+                setCountryTranslation(cached);
+                return;
+            }
+
+            try {
+                const translated = await translate(key, "tr");
+                translationCache.current.set(key, translated);
+                setCountryTranslation(translated);
+            } catch {
+                setCountryTranslation(key);
+            }
+        };
+
+        updateTranslation();
+    }, [clickedD]);
+
     useEffect(() => {
         localStorage.setItem("passport", passport);
     }, [passport]);
 
     useEffect(() => {
-        if (!country) return;
+        if (!countryTranslation) return;
 
         const abortController = new AbortController();
-        
+
         const fetchCountryInfo = async () => {
             setIsLoading(true);
             setError(false);
             try {
-                const response = await fetch(`/api/country/${country}`, { signal: abortController.signal });
+                const response = await fetch(`/api/country/${countryTranslation}`, { signal: abortController.signal });
                 if (!response.ok) throw new Error("Veri alınamadı");
                 const data = await response.json();
                 setCountryInfo(data);
@@ -67,7 +96,7 @@ export default function Sidebar({
 
         fetchCountryInfo();
         return () => abortController.abort();
-    }, [country]);
+    }, [countryTranslation]);
 
     const closeSidebar = useCallback(() => {
         setIsDrawerOpen(false);
@@ -75,17 +104,24 @@ export default function Sidebar({
         localStorage.removeItem("clickedD");
     }, [setIsDrawerOpen, setClickedD]);
 
-    if (!country) return null;
+    if (!countryTranslation) return null;
+
+    const fetchVisaInfo = async (country: string | null) => {
+        const response = await fetch(`/api/visa?country=${encodeURIComponent(country || "")}&passport=${encodeURIComponent(passport)}`);
+        const data = await response.text();
+
+        console.log(`Vize Durumu: ${data}`);
+    };
 
     return (
-        <aside 
+        <aside
             className="bg-base-100 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
             role="complementary"
         >
             <div className="p-4">
                 <div className="flex justify-end">
-                    <button 
-                        className="p-2 hover:bg-base-100 rounded-full transition-colors group" 
+                    <button
+                        className="p-2 hover:bg-base-100 rounded-full transition-colors group"
                         onClick={closeSidebar}
                         aria-label="Kapat"
                     >
@@ -105,16 +141,16 @@ export default function Sidebar({
                     </div>
                 ) : (
                     <nav aria-label="Country Information">
-                        <h2 className="text-xl font-bold mb-4 border-b pb-2">{countryInfo?.name || country}</h2>
-                        
+                        <h2 className="text-xl font-bold mb-4 border-b pb-2">{countryInfo?.name || countryTranslation}</h2>
+
                         <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
                             <p className="line-clamp-10 mb-3">
                                 {countryInfo?.extract || "Bu ülke hakkında detaylı bilgi bulunmamaktadır."}
                             </p>
                             {countryInfo?.name && (
-                                <Link 
-                                    href={`https://tr.wikipedia.org/wiki/${encodeURIComponent(countryInfo.name)}`} 
-                                    target="_blank" 
+                                <Link
+                                    href={`https://tr.wikipedia.org/wiki/${encodeURIComponent(countryInfo.name)}`}
+                                    target="_blank"
                                     className="text-blue-500 font-medium hover:underline inline-flex items-center gap-1 mb-6"
                                 >
                                     Daha Fazla Bilgi
@@ -127,20 +163,19 @@ export default function Sidebar({
                         <div className="mb-4 font-semibold text-sm">Pasaport Türünüz</div>
                         <div className="grid grid-cols-4 gap-2 mb-6">
                             {PASSPORT_TYPES.map((type) => (
-                                <button 
+                                <button
                                     key={type.id}
                                     title={type.label}
                                     onClick={() => setPassport(type.id)}
-                                    className={`relative flex flex-col items-center transition-all p-2 rounded-lg border-2 ${
-                                        passport === type.id 
-                                        ? "border-base-500" 
+                                    className={`relative flex flex-col items-center transition-all p-2 rounded-lg border-2 ${passport === type.id
+                                        ? "border-base-500"
                                         : "border-transparent hover:border-base-300"
-                                    }`}
+                                        }`}
                                 >
-                                    <Image 
-                                        width={36} 
-                                        height={50} 
-                                        alt={type.label} 
+                                    <Image
+                                        width={36}
+                                        height={50}
+                                        alt={type.label}
                                         src={type.src}
                                         className="object-contain"
                                     />
@@ -149,7 +184,7 @@ export default function Sidebar({
                             ))}
                         </div>
 
-                        <button className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
+                        <button onClick={() => fetchVisaInfo(clickedD)} className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
                             Vize Durumunu Sorgula
                         </button>
 

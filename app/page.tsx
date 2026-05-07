@@ -7,7 +7,6 @@ import dataset from "@/dataset.json";
 import { centerMedian, area } from "@turf/turf";
 import Sidebar from "./components/Sidebar";
 import AltitudeToggle from "./components/AltitudeToggle";
-import translate from "translate";
 
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false
@@ -25,7 +24,6 @@ export default function Home() {
     return "";
   })());
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [countryTranslation, setCountryTranslation] = useState<string>("");
   const globeRef = useRef<any>(null);
 
   const focusPolygon = (feature: any) => {
@@ -51,36 +49,6 @@ export default function Home() {
       localStorage.setItem("clickedD", clickedD);
     }
   }, [clickedD]);
-
-  const translationCache = useRef<Map<string, string>>(new Map());
-
-  useEffect(() => {
-    const updateTranslation = async () => {
-      const key = clickedD || "";
-      if (!key) {
-        setCountryTranslation("");
-        return;
-      }
-
-      const cached = translationCache.current.get(key);
-      if (cached) {
-        setCountryTranslation(cached);
-        return;
-      }
-
-      try {
-        const translated = await translate(key, "tr");
-        translationCache.current.set(key, translated);
-        setCountryTranslation(translated);
-      } catch {
-        setCountryTranslation(key);
-      }
-    };
-
-    updateTranslation();
-  }, [clickedD]);
-
-  const countryName = countryTranslation || clickedD || "";
 
   return (
     <div>
@@ -153,7 +121,7 @@ export default function Home() {
       />
       {isDrawerOpen && (
         <Sidebar
-          country={countryName}
+          clickedD={clickedD}
           setIsDrawerOpen={setIsDrawerOpen}
           setClickedD={setClickedD}
         />
