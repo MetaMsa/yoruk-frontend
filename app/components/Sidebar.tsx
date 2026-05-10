@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import translate from "translate";
+import Modal from "./Modal";
 
 interface CountryInfo {
     name: string;
@@ -17,6 +18,20 @@ const PASSPORT_TYPES = [
     { id: "Service", label: "Hizmet", src: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Turkish_Passport_%28service%29.svg" },
     { id: "Diplomatic", label: "Diplomatik", src: "https://upload.wikimedia.org/wikipedia/commons/3/31/Turkish_Passport_%28diplomatic%29.svg" },
 ];
+
+const PASSPORT_MAP: Record<string, number> = {
+    Ordinary: 0,
+    Special: 1,
+    Service: 2,
+    Diplomatic: 3,
+};
+
+export async function fetchVisaInfo(trName: string, passportIndex: number) {
+    const response = await fetch(`/api/visa?country=${encodeURIComponent(trName || "")}&passportIndex=${encodeURIComponent(passportIndex)}`);
+    const data = await response.text();
+
+    return data;
+}
 
 export default function Sidebar({
     clickedD,
@@ -37,6 +52,7 @@ export default function Sidebar({
         }
         return "Ordinary";
     });
+    const [visaData, setVisaData] = useState<string>("");
 
     const translationCache = useRef<Map<string, string>>(new Map());
 
@@ -105,13 +121,6 @@ export default function Sidebar({
     }, [setIsDrawerOpen, setClickedD]);
 
     if (!countryTranslation) return null;
-
-    const fetchVisaInfo = async (country: string | null) => {
-        const response = await fetch(`/api/visa?country=${encodeURIComponent(country || "")}&passport=${encodeURIComponent(passport)}`);
-        const data = await response.text();
-
-        console.log(`Vize Durumu: ${data}`);
-    };
 
     return (
         <aside
@@ -184,7 +193,13 @@ export default function Sidebar({
                             ))}
                         </div>
 
-                        <button onClick={() => fetchVisaInfo(clickedD)} className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
+                        <button onClick={async () => {
+                            const data = await fetchVisaInfo(countryTranslation, PASSPORT_MAP[passport]);
+                            setVisaData(data);
+                            const modal = document.getElementById('my_modal_1') as HTMLDialogElement | null;
+                            modal?.showModal();
+                        }}
+                            className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md">
                             Vize Durumunu Sorgula
                         </button>
 
@@ -194,6 +209,7 @@ export default function Sidebar({
                     </nav>
                 )}
             </div>
+            <Modal data={visaData || ""} />
         </aside>
     );
 }
