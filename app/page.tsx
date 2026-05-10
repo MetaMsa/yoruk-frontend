@@ -1,32 +1,35 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import dataset from "@/dataset.json";
 import { centerMedian, area } from "@turf/turf";
 import Sidebar from "./components/Sidebar";
 import AltitudeToggle from "./components/AltitudeToggle";
+import "@/node_modules/flag-icons/css/flag-icons.min.css";
 
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false
 });
 
+const countries = (dataset as unknown) as FeatureCollection<Geometry, GeoJsonProperties>;
+
 export default function Home() {
-  const [countries] = useState<FeatureCollection<Geometry, GeoJsonProperties>>(
-    (dataset as unknown) as FeatureCollection<Geometry, GeoJsonProperties>
-  );
   const [hoverAdmin, setHoverAdmin] = useState<string | null>(null);
   const [clickedD, setClickedD] = useState<string | null>((() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("clickedD") || "";
+      return localStorage.getItem("clickedD");
     }
-    return "";
+    return null;
   })());
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const globeRef = useRef<any>(null);
 
-  const focusPolygon = (feature: any) => {
+  const selectedCountry = countries.features.find(
+    f => f.properties?.ADMIN === clickedD
+  );
+
+  const focusPolygon = useCallback((feature: any) => {
     if (!globeRef.current) return;
 
     const centered = centerMedian(feature);
@@ -42,7 +45,7 @@ export default function Home() {
       },
       1500
     );
-  };
+  }, []);
 
   useEffect(() => {
     if (clickedD) {
@@ -83,11 +86,9 @@ export default function Home() {
 
           setHoverAdmin(polygon.properties.ADMIN);
         }}
-        onPolygonClick={async (polygon: any) => {
+        onPolygonClick={(polygon: any) => {
           setClickedD(polygon.properties.ADMIN);
           focusPolygon(polygon);
-
-          setIsDrawerOpen(true);
         }}
         onGlobeReady={() => {
           if (!globeRef.current) return;
@@ -99,8 +100,8 @@ export default function Home() {
             );
             if (found) {
               setClickedD(found?.properties?.ADMIN);
+
               focusPolygon(found);
-              setIsDrawerOpen(true);
             }
             return;
           }
@@ -114,15 +115,18 @@ export default function Home() {
             1500
           )
         }}
-        globeOffset={isDrawerOpen ? [-125, 0] : [0, 0]}
+        globeOffset={clickedD ? [-125, 0] : [0, 0]}
         showGlobe={false}
         showAtmosphere={false}
         backgroundColor="rgba(0,0,0,0)"
+        polygonLabel={(d: any) => `<span class="fi fi-${d.properties.ISO_A2.toLowerCase()} mt-5 p-5"></span>`}
+        labelRotation={100}
       />
-      {isDrawerOpen && (
+      {clickedD && (
         <Sidebar
-          clickedD={clickedD}
-          setIsDrawerOpen={setIsDrawerOpen}
+          name={selectedCountry?.properties?.ADMIN}
+          nameLong={selectedCountry?.properties?.NAME_LONG}
+          formalEn={selectedCountry?.properties?.FORMAL_EN}
           setClickedD={setClickedD}
         />
       )}
