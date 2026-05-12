@@ -1,4 +1,7 @@
-export default function AltitudeToggle({ globeRef }: { globeRef: any }) {
+import { RefObject } from "react";
+import { GlobeMethods } from "react-globe.gl";
+
+export default function AltitudeToggle({ globeRef }: { globeRef: RefObject<GlobeMethods | undefined> }) {
     const reduceAltitude = () => {
         if (!globeRef.current || globeRef.current.pointOfView().altitude < 1) return;
 
@@ -6,19 +9,19 @@ export default function AltitudeToggle({ globeRef }: { globeRef: any }) {
             {
                 lat: globeRef.current.pointOfView().lat,
                 lng: globeRef.current.pointOfView().lng,
-                altitude: globeRef.current.pointOfView().altitude - 1
+                altitude: globeRef.current.pointOfView().altitude - 0.5
             },
             1500
         );
     }
 
     const increaseAltitude = () => {
-        if (!globeRef.current || globeRef.current.pointOfView().altitude >= 10) return;
+        if (!globeRef.current || globeRef.current.pointOfView().altitude >= 2) return;
         globeRef.current.pointOfView(
             {
                 lat: globeRef.current.pointOfView().lat,
                 lng: globeRef.current.pointOfView().lng,
-                altitude: globeRef.current.pointOfView().altitude + 1
+                altitude: globeRef.current.pointOfView().altitude + 0.5
             },
             1500
         );

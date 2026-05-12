@@ -5,39 +5,18 @@ import {
     Loader2,
     AlertCircle
 } from "lucide-react";
-
 import Image from "next/image";
 import Link from "next/link";
-
 import {
-    Dispatch,
-    SetStateAction,
     useEffect,
     useState,
-    useRef,
     useCallback
 } from "react";
-
-import translate from "translate";
-
 import Modal from "./Modal";
-
-interface CountryInfo {
-    name: string;
-    extract: string;
-}
-
-type PassportType =
-    | "Ordinary"
-    | "Special"
-    | "Service"
-    | "Diplomatic";
-
-interface TranslationState {
-    name: string;
-    nameLong: string;
-    formalEn: string;
-}
+import { useCountryStore } from "../store/countryStore";
+import type { CountryInfo, Country } from "../types/CountryType";
+import { TranslationState } from "../types/TranslationType";
+import { PassportType } from "../types/PassportType";
 
 const PASSPORT_TYPES: {
     id: PassportType;
@@ -74,20 +53,17 @@ const PASSPORT_MAP: Record<PassportType, number> = {
 };
 
 async function fetchVisaInfo({
-    name,
-    nameLong,
-    formalEn,
+    common,
+    official,
     passportIndex
 }: {
-    name: string;
-    nameLong: string;
-    formalEn: string;
+    common: string;
+    official: string;
     passportIndex: number;
 }) {
     const params = new URLSearchParams({
-        name,
-        nameLong,
-        formalEn,
+        common,
+        official,
         passportIndex: passportIndex.toString()
     });
 
@@ -101,32 +77,26 @@ async function fetchVisaInfo({
 }
 
 export default function Sidebar({
-    name,
-    nameLong,
-    formalEn,
-    setClickedD
+    official,
+    WB_A2
 }: {
-    name: string;
-    nameLong: string;
-    formalEn: string;
-    setClickedD: Dispatch<string | null>;
+    official: string;
+    WB_A2: string;
 }) {
+    const setClickedD =
+        useCountryStore((s) => s.setClickedD);
+
     const [countryInfo, setCountryInfo] =
         useState<CountryInfo | null>(null);
-
     const [isLoading, setIsLoading] =
         useState(false);
-
     const [error, setError] =
         useState(false);
-
     const [translations, setTranslations] =
         useState<TranslationState>({
-            name: "",
-            nameLong: "",
-            formalEn: ""
+            common: "",
+            official: ""
         });
-
     const [passport, setPassport] =
         useState<PassportType>(() => {
             if (typeof window !== "undefined") {
@@ -138,124 +108,44 @@ export default function Sidebar({
 
             return "Ordinary";
         });
-
     const [visaData, setVisaData] =
         useState<string>("");
-
-    const translationNameCache =
-        useRef<Map<string, string>>(new Map());
-
-    const translationNameLongCache =
-        useRef<Map<string, string>>(new Map());
-
-    const translationFormalEnCache =
-        useRef<Map<string, string>>(new Map());
+    const [flag, setFlag] =
+        useState<string>("");
 
     useEffect(() => {
-        let cancelled = false;
-
-        const updateTranslation = async () => {
-            const nameKey = name || "";
-            const nameLongKey = nameLong || "";
-            const formalEnKey = formalEn || "";
-
-            if (
-                !nameKey ||
-                !nameLongKey ||
-                !formalEnKey
-            ) {
-                if (!cancelled) {
-                    setTranslations({
-                        name: nameKey,
-                        nameLong: nameLongKey,
-                        formalEn: formalEnKey
-                    });
-                }
-
-                return;
+        const fetchTranslation = async () => {
+            if (official === "Turkish Republic of Northern Cyprus") {
+                setTranslations({
+                    common: "Kuzey Kıbrıs",
+                    official: "Kuzey Kıbrıs Türk Cumhuriyeti"
+                })
+                setFlag("https://upload.wikimedia.org/wikipedia/commons/1/1e/Flag_of_the_Turkish_Republic_of_Northern_Cyprus.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original");
             }
 
-            try {
-                let translatedName =
-                    translationNameCache.current.get(nameKey);
+            const res = await fetch(`https://restcountries.com/v3.1/name/${official}`);
 
-                if (!translatedName) {
-                    translatedName = await translate(
-                        nameKey,
-                        "tr"
-                    );
+            if (!res.ok) return;
 
-                    translationNameCache.current.set(
-                        nameKey,
-                        translatedName
-                    );
-                }
+            const data: Country[] = await res.json();
 
-                let translatedNameLong =
-                    translationNameLongCache.current.get(
-                        nameLongKey
-                    );
+            setTranslations({
+                common: data[0].translations?.tur?.common || "",
+                official: data[0].translations?.tur?.official || ""
+            })
 
-                if (!translatedNameLong) {
-                    translatedNameLong = await translate(
-                        nameLongKey,
-                        "tr"
-                    );
-
-                    translationNameLongCache.current.set(
-                        nameLongKey,
-                        translatedNameLong
-                    );
-                }
-
-                let translatedFormalEn =
-                    translationFormalEnCache.current.get(
-                        formalEnKey
-                    );
-
-                if (!translatedFormalEn) {
-                    translatedFormalEn = await translate(
-                        formalEnKey,
-                        "tr"
-                    );
-
-                    translationFormalEnCache.current.set(
-                        formalEnKey,
-                        translatedFormalEn
-                    );
-                }
-
-                if (!cancelled) {
-                    setTranslations({
-                        name: translatedName,
-                        nameLong: translatedNameLong,
-                        formalEn: translatedFormalEn
-                    });
-                }
-            } catch {
-                if (!cancelled) {
-                    setTranslations({
-                        name: nameKey,
-                        nameLong: nameLongKey,
-                        formalEn: formalEnKey
-                    });
-                }
-            }
+            setFlag(data[0].flags.svg);
         };
 
-        updateTranslation();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [name, nameLong, formalEn]);
+        fetchTranslation();
+    }, [official]);
 
     useEffect(() => {
         localStorage.setItem("passport", passport);
     }, [passport]);
 
     useEffect(() => {
-        if (!translations.name) return;
+        if (!translations.common) return;
 
         const abortController =
             new AbortController();
@@ -267,7 +157,7 @@ export default function Sidebar({
             try {
                 const response = await fetch(
                     `/api/country/${encodeURIComponent(
-                        translations.name
+                        translations.common
                     )}`,
                     {
                         signal: abortController.signal
@@ -284,13 +174,19 @@ export default function Sidebar({
                     await response.json();
 
                 setCountryInfo(data);
-            } catch (err: any) {
-                if (err.name !== "AbortError") {
-                    console.error(
-                        "Fetch error:",
-                        err
-                    );
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    if (err.name !== "AbortError") {
+                        console.error(
+                            "Fetch error:",
+                            err
+                        );
 
+                        setCountryInfo(null);
+                        setError(true);
+                    }
+                } else {
+                    console.error("Fetch error:", err);
                     setCountryInfo(null);
                     setError(true);
                 }
@@ -302,7 +198,7 @@ export default function Sidebar({
         fetchCountryInfo();
 
         return () => abortController.abort();
-    }, [translations.name]);
+    }, [translations.common]);
 
     const closeSidebar = useCallback(() => {
         setClickedD(null);
@@ -310,7 +206,7 @@ export default function Sidebar({
         localStorage.removeItem("clickedD");
     }, [setClickedD]);
 
-    if (!translations.name) {
+    if (!translations.common) {
         return null;
     }
 
@@ -319,7 +215,7 @@ export default function Sidebar({
             className="bg-base-100 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
             role="complementary"
         >
-            <div className="p-4">
+            <div className="p-4 mt-15">
                 <div className="flex justify-end">
                     <button
                         className="p-2 hover:bg-base-200 rounded-full transition-colors group"
@@ -354,9 +250,10 @@ export default function Sidebar({
                     </div>
                 ) : (
                     <nav aria-label="Country Information">
-                        <h2 className="text-xl font-bold mb-4 border-b pb-2">
+                        <h2 className="text-xl font-bold mb-4 border-b pb-2 inline-flex gap-3 w-full">
+                            <Image alt="flag" width={32} height={32} src={flag} />
                             {countryInfo?.name ||
-                                translations.name}
+                                translations.common}
                         </h2>
 
                         <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
@@ -396,8 +293,8 @@ export default function Sidebar({
                                             )
                                         }
                                         className={`relative flex flex-col items-center transition-all p-2 rounded-lg border-2 ${passport === type.id
-                                                ? "border-base-500"
-                                                : "border-transparent hover:border-base-300"
+                                            ? "border-base-500"
+                                            : "border-transparent hover:border-base-300"
                                             }`}
                                     >
                                         <Image
@@ -422,11 +319,9 @@ export default function Sidebar({
                                     const data =
                                         await fetchVisaInfo(
                                             {
-                                                name: translations.name,
-                                                nameLong:
-                                                    translations.nameLong,
-                                                formalEn:
-                                                    translations.formalEn,
+                                                common: translations.common,
+                                                official:
+                                                    translations.official,
                                                 passportIndex:
                                                     PASSPORT_MAP[
                                                     passport

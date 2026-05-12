@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import dataset from "@/dataset.json";
-import { centerMedian, area } from "@turf/turf";
+import centerMedian from "@turf/center-median";
+import area from "@turf/area";
 import Sidebar from "./components/Sidebar";
 import AltitudeToggle from "./components/AltitudeToggle";
-import "@/node_modules/flag-icons/css/flag-icons.min.css";
+import { useCountryStore } from "./store/countryStore";
+import { GlobeMethods } from "react-globe.gl";
 
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false
@@ -17,41 +19,39 @@ const countries = (dataset as unknown) as FeatureCollection<Geometry, GeoJsonPro
 
 export default function Home() {
   const [hoverAdmin, setHoverAdmin] = useState<string | null>(null);
-  const [clickedD, setClickedD] = useState<string | null>((() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("clickedD");
-    }
-    return null;
-  })());
-  const globeRef = useRef<any>(null);
+  const { clickedD, setClickedD } = useCountryStore();
 
-  const selectedCountry = countries.features.find(
-    f => f.properties?.ADMIN === clickedD
-  );
+  const globeRef = useRef<GlobeMethods | undefined>(undefined);
 
-  const focusPolygon = useCallback((feature: any) => {
-    if (!globeRef.current) return;
+  const selectedCountry = useMemo(() => {
+    return countries.features.find(
+      f => f.properties?.FORMAL_EN === clickedD
+    );
+  }, [clickedD]);
 
-    const centered = centerMedian(feature);
+  useEffect(() => {
+    if (!globeRef.current || !selectedCountry) return;
+
+    const centered = centerMedian({
+      type: "FeatureCollection",
+      features: [selectedCountry],
+    });
+
     const [lng, lat] = centered.geometry.coordinates;
-
-    const polygonArea = area(feature);
+    const polygonArea = area(selectedCountry);
 
     globeRef.current.pointOfView(
       {
         lat,
         lng,
-        altitude: Math.max(0.6, Math.min(2.5, polygonArea / 1000000000000))
+        altitude: Math.max(
+          0.6,
+          Math.min(2.5, polygonArea / 1000000000000)
+        ),
       },
       1500
     );
-  }, []);
-
-  useEffect(() => {
-    if (clickedD) {
-      localStorage.setItem("clickedD", clickedD);
-    }
-  }, [clickedD]);
+  }, [selectedCountry]);
 
   return (
     <div>
@@ -59,15 +59,15 @@ export default function Home() {
         ref={globeRef}
         polygonsData={countries.features}
         polygonCapColor={(d: any) => {
-          if (d.properties.ADMIN === "Turkey") {
+          if (d.properties.FORMAL_EN === "Republic of Turkey") {
             return "rgba(227, 10, 23, 1)";
           }
 
-          if (d.properties.ADMIN === clickedD) {
+          if (d.properties.FORMAL_EN === clickedD) {
             return "rgb(0, 81, 255)";
           }
 
-          if (d.properties.ADMIN === hoverAdmin) {
+          if (d.properties.FORMAL_EN === hoverAdmin) {
             return "rgba(59, 130, 246, 1)";
           }
 
@@ -76,58 +76,81 @@ export default function Home() {
         polygonStrokeColor={() => "#ffffff"}
         polygonSideColor={() => "rgba(0,0,0,0.15)"}
         polygonAltitude={(d: any) =>
-          d.properties.ADMIN === hoverAdmin ? 0.05 : 0
+          d.properties.FORMAL_EN === hoverAdmin ? 0.05 : 0
         }
         onPolygonHover={(polygon: any) => {
-          if (!polygon || polygon.properties.ADMIN === "Antarctica") {
+          if (!polygon) {
             setHoverAdmin(null);
             return;
           }
 
-          setHoverAdmin(polygon.properties.ADMIN);
+          setHoverAdmin(polygon.properties.FORMAL_EN);
         }}
         onPolygonClick={(polygon: any) => {
-          setClickedD(polygon.properties.ADMIN);
-          focusPolygon(polygon);
+          setClickedD(polygon.properties.FORMAL_EN);
         }}
         onGlobeReady={() => {
           if (!globeRef.current) return;
 
           const saved = localStorage.getItem("clickedD");
-          if (saved) {
-            const found = countries.features.find(
-              f => f.properties?.ADMIN === saved
-            );
-            if (found) {
-              setClickedD(found?.properties?.ADMIN);
 
-              focusPolygon(found);
-            }
+          if (!saved) {
+            globeRef.current.pointOfView(
+              {
+                lat: 38.95432521212122,
+                lng: 34.86702380303031,
+                altitude: 1.8,
+              },
+              1500
+            );
             return;
           }
 
+          const found = countries.features.find(
+            f => f.properties?.FORMAL_EN === saved
+          );
+
+          if (!found) {
+            globeRef.current.pointOfView(
+              {
+                lat: 38.95432521212122,
+                lng: 34.86702380303031,
+                altitude: 1.8,
+              },
+              1500
+            );
+            return;
+          }
+
+          const centered = centerMedian({
+            type: "FeatureCollection",
+            features: [found],
+          });
+
+          const [lng, lat] = centered.geometry.coordinates;
+          const polygonArea = area(found);
+
+          setClickedD(found.properties?.FORMAL_EN);
+
           globeRef.current.pointOfView(
             {
-              lat: 38.95432521212122,
-              lng: 34.86702380303031,
-              altitude: 1.8
+              lat,
+              lng,
+              altitude: Math.max(0.6, Math.min(2.5, polygonArea / 1000000000000)),
             },
             1500
-          )
+          );
         }}
         globeOffset={clickedD ? [-125, 0] : [0, 0]}
         showGlobe={false}
         showAtmosphere={false}
         backgroundColor="rgba(0,0,0,0)"
-        polygonLabel={(d: any) => `<span class="fi fi-${d.properties.ISO_A2.toLowerCase()} mt-5 p-5"></span>`}
         labelRotation={100}
       />
       {clickedD && (
         <Sidebar
-          name={selectedCountry?.properties?.ADMIN}
-          nameLong={selectedCountry?.properties?.NAME_LONG}
-          formalEn={selectedCountry?.properties?.FORMAL_EN}
-          setClickedD={setClickedD}
+          official={selectedCountry?.properties?.FORMAL_EN}
+          WB_A2={selectedCountry?.properties?.WB_A2}
         />
       )}
       <AltitudeToggle globeRef={globeRef} />

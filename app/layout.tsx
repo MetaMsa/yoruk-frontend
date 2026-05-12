@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Toggle from "./components/ThemeToggle";
 import { Mail } from "lucide-react";
+import SearchBar from "./components/SearchBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html
       lang="tr"
@@ -34,10 +36,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col overflow-hidden">
         <header>
-          <nav className="navbar bg-base-300 shadow-sm border-b">
+          <nav className="flex justify-between navbar bg-base-300 shadow-sm border-b">
             <Link href={"/"}>
               <Image className="rounded-full border border-black" src="/YÖRÜK.svg" alt="Logo" width={64} height={64} />
             </Link>
+            <SearchBar />
           </nav>
         </header>
         <main className="flex-1 pb-20">
