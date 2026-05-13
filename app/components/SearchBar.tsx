@@ -77,6 +77,11 @@ export default function SearchBar() {
                     enhancedData.push(northernCyprus);
                 }
 
+                if (data[0].translations?.tur?.common === "Falkland (Malvina) Adaları") {
+                    data[0].translations.tur.common = "Falkland Adaları";
+                    data[0].translations.tur.official = "Falkland Adaları";
+                }
+
                 const filtered = enhancedData.filter((c) => {
                     const code = c.cca2?.toUpperCase();
 

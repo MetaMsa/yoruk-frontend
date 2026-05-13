@@ -90,19 +90,15 @@ export default function Home() {
           setClickedD(polygon.properties.FORMAL_EN);
         }}
         onGlobeReady={() => {
-          if (!globeRef.current) return;
-
           const saved = localStorage.getItem("clickedD");
 
           if (!saved) {
-            globeRef.current.pointOfView(
-              {
-                lat: 38.95432521212122,
-                lng: 34.86702380303031,
-                altitude: 1.8,
-              },
-              1500
-            );
+            requestAnimationFrame(() => {
+              globeRef.current?.pointOfView(
+                { lat: 38.95, lng: 34.86, altitude: 1.8 },
+                1500
+              );
+            });
             return;
           }
 
@@ -111,14 +107,16 @@ export default function Home() {
           );
 
           if (!found) {
-            globeRef.current.pointOfView(
-              {
-                lat: 38.95432521212122,
-                lng: 34.86702380303031,
-                altitude: 1.8,
-              },
-              1500
-            );
+            requestAnimationFrame(() => {
+              globeRef.current?.pointOfView(
+                {
+                  lat: 38.95,
+                  lng: 34.86,
+                  altitude: 1.8
+                },
+                1500
+              );
+            });
             return;
           }
 
@@ -130,16 +128,20 @@ export default function Home() {
           const [lng, lat] = centered.geometry.coordinates;
           const polygonArea = area(found);
 
-          setClickedD(found.properties?.FORMAL_EN);
+          if (found?.properties?.FORMAL_EN) {
+            setClickedD(found.properties.FORMAL_EN);
+          }
 
-          globeRef.current.pointOfView(
-            {
-              lat,
-              lng,
-              altitude: Math.max(0.6, Math.min(2.5, polygonArea / 1000000000000)),
-            },
-            1500
-          );
+          requestAnimationFrame(() => {
+            globeRef.current?.pointOfView(
+              {
+                lat,
+                lng,
+                altitude: Math.max(0.6, Math.min(2.5, polygonArea / 1000000000000)),
+              },
+              1500
+            );
+          });
         }}
         globeOffset={clickedD ? [-125, 0] : [0, 0]}
         showGlobe={false}
@@ -150,7 +152,6 @@ export default function Home() {
       {clickedD && (
         <Sidebar
           official={selectedCountry?.properties?.FORMAL_EN}
-          WB_A2={selectedCountry?.properties?.WB_A2}
         />
       )}
       <AltitudeToggle globeRef={globeRef} />

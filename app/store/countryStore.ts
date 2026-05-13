@@ -1,9 +1,6 @@
 import { create } from "zustand";
-
-interface CountryStore {
-    clickedD: string | null;
-    setClickedD: (value: string | null) => void;
-}
+import { CountryStore } from "../types/StoreType";
+import { PassportType } from "../types/PassportType";
 
 export const useCountryStore = create<CountryStore>((set) => ({
     clickedD: null,
@@ -19,4 +16,17 @@ export const useCountryStore = create<CountryStore>((set) => ({
             }
         }
     },
+
+    passport:
+        typeof window !== "undefined"
+            ? localStorage.getItem("passport") as PassportType || "Ordinary" as PassportType
+            : "Ordinary" as PassportType,
+
+    setPassport: (value) => {
+        set({ passport: value });
+
+        if (typeof window !== "undefined") {
+            localStorage.setItem("passport", value || "Ordinary");
+        }
+    }
 }));

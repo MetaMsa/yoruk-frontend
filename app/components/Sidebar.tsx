@@ -3,7 +3,8 @@
 import {
     CircleX,
     Loader2,
-    AlertCircle
+    AlertCircle,
+    Share2
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -77,19 +78,17 @@ async function fetchVisaInfo({
 }
 
 export default function Sidebar({
-    official,
-    WB_A2
+    official
 }: {
     official: string;
-    WB_A2: string;
 }) {
-    const setClickedD =
-        useCountryStore((s) => s.setClickedD);
+    const { clickedD, setClickedD } =
+        useCountryStore();
 
     const [countryInfo, setCountryInfo] =
         useState<CountryInfo | null>(null);
-    const [isLoading, setIsLoading] =
-        useState(false);
+    const [isCountryLoading, setIsCountryLoading] = useState(false);
+    const [isVisaLoading, setIsVisaLoading] = useState(false);
     const [error, setError] =
         useState(false);
     const [translations, setTranslations] =
@@ -97,17 +96,9 @@ export default function Sidebar({
             common: "",
             official: ""
         });
-    const [passport, setPassport] =
-        useState<PassportType>(() => {
-            if (typeof window !== "undefined") {
-                return (
-                    (localStorage.getItem("passport") as PassportType) ||
-                    "Ordinary"
-                );
-            }
+    const { passport, setPassport } =
+        useCountryStore();
 
-            return "Ordinary";
-        });
     const [visaData, setVisaData] =
         useState<string>("");
     const [flag, setFlag] =
@@ -121,6 +112,28 @@ export default function Sidebar({
                     official: "Kuzey Kıbrıs Türk Cumhuriyeti"
                 })
                 setFlag("https://upload.wikimedia.org/wikipedia/commons/1/1e/Flag_of_the_Turkish_Republic_of_Northern_Cyprus.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original");
+
+                return;
+            }
+
+            else if (official === "Republic of Korea") {
+                setTranslations({
+                    common: "Güney Kore",
+                    official: "Kore Cumhuriyeti"
+                })
+                setFlag("https://flagcdn.com/kr.svg");
+
+                return
+            }
+
+            else if (official === "Ireland") {
+                setTranslations({
+                    common: "İrlanda",
+                    official: "İrlanda Cumhuriyeti"
+                })
+                setFlag("https://flagcdn.com/ie.svg");
+
+                return;
             }
 
             const res = await fetch(`https://restcountries.com/v3.1/name/${official}`);
@@ -128,6 +141,11 @@ export default function Sidebar({
             if (!res.ok) return;
 
             const data: Country[] = await res.json();
+
+            if (data[0].translations?.tur?.common === "Falkland (Malvina) Adaları") {
+                data[0].translations.tur.common = "Falkland Adaları";
+                data[0].translations.tur.official = "Falkland Adaları";
+            }
 
             setTranslations({
                 common: data[0].translations?.tur?.common || "",
@@ -141,24 +159,18 @@ export default function Sidebar({
     }, [official]);
 
     useEffect(() => {
-        localStorage.setItem("passport", passport);
-    }, [passport]);
-
-    useEffect(() => {
         if (!translations.common) return;
 
         const abortController =
             new AbortController();
 
         const fetchCountryInfo = async () => {
-            setIsLoading(true);
+            setIsCountryLoading(true);
             setError(false);
 
             try {
                 const response = await fetch(
-                    `/api/country/${encodeURIComponent(
-                        translations.common
-                    )}`,
+                    `/api/country?official=${translations.official}&common=${translations.common}`,
                     {
                         signal: abortController.signal
                     }
@@ -191,14 +203,33 @@ export default function Sidebar({
                     setError(true);
                 }
             } finally {
-                setIsLoading(false);
+                setIsCountryLoading(false);
             }
         };
 
         fetchCountryInfo();
 
         return () => abortController.abort();
-    }, [translations.common]);
+    }, [translations.official]);
+
+    const share = useCallback(async () => {
+        const shareData = {
+            title: "Yörük: Seyahat Yardımcısı",
+            text:
+                "Yörük Seyahat Yardımcısı'ndan " +
+                PASSPORT_TYPES[PASSPORT_MAP[
+                passport
+                ]].label +
+                " pasaportla gidebileceğimiz bir ülke keşfettim bir göz at:" +
+                ` ${process.env.NEXT_PUBLIC_SITE_URL}${encodeURIComponent(clickedD!)}/${encodeURIComponent(passport)}`,
+        };
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            await navigator.clipboard.writeText(shareData.text);
+            alert("Paylaşma desteklenmiyor, metin panoya kopyalandı.");
+        }
+    }, [clickedD, passport]);
 
     const closeSidebar = useCallback(() => {
         setClickedD(null);
@@ -216,7 +247,17 @@ export default function Sidebar({
             role="complementary"
         >
             <div className="p-4 mt-15">
-                <div className="flex justify-end">
+                <div className="flex justify-between mb-3">
+                    <button
+                        className="p-2 hover:bg-base-200 rounded-full transition-colors group"
+                        onClick={share}
+                        aria-label="Kapat"
+                    >
+                        <Share2
+                            size={24}
+                            className="text-slate-500 group-hover:text-red-500 transition-colors"
+                        />
+                    </button>
                     <button
                         className="p-2 hover:bg-base-200 rounded-full transition-colors group"
                         onClick={closeSidebar}
@@ -229,7 +270,7 @@ export default function Sidebar({
                     </button>
                 </div>
 
-                {isLoading ? (
+                {isCountryLoading ? (
                     <div className="flex flex-col justify-center items-center h-64 gap-3">
                         <Loader2
                             className="animate-spin text-blue-500"
@@ -251,13 +292,12 @@ export default function Sidebar({
                 ) : (
                     <nav aria-label="Country Information">
                         <h2 className="text-xl font-bold mb-4 border-b pb-2 inline-flex gap-3 w-full">
-                            <Image alt="flag" width={32} height={32} src={flag} />
-                            {countryInfo?.name ||
-                                translations.common}
+                            <Image alt="flag" width={32} height={32} src={flag} className="h-10" />
+                            {translations.common}
                         </h2>
 
                         <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
-                            <p className="line-clamp-10 mb-3">
+                            <p className="line-clamp-5 mb-3">
                                 {countryInfo?.extract ||
                                     "Bu ülke hakkında detaylı bilgi bulunmamaktadır."}
                             </p>
@@ -275,7 +315,7 @@ export default function Sidebar({
                             )}
                         </div>
 
-                        <hr className="my-6 border-slate-200 dark:border-neutral-800" />
+                        <hr className="my-1" />
 
                         <div className="mb-4 font-semibold text-sm">
                             Pasaport Türünüz
@@ -292,7 +332,7 @@ export default function Sidebar({
                                                 type.id
                                             )
                                         }
-                                        className={`relative flex flex-col items-center transition-all p-2 rounded-lg border-2 ${passport === type.id
+                                        className={`relative flex flex-col items-center transition-all rounded-lg border-2 ${passport === type.id
                                             ? "border-base-500"
                                             : "border-transparent hover:border-base-300"
                                             }`}
@@ -302,7 +342,7 @@ export default function Sidebar({
                                             height={50}
                                             alt={type.label}
                                             src={type.src}
-                                            className="object-contain"
+                                            className="object-contain m-2"
                                         />
 
                                         <span className="text-[8px] mt-1 w-full text-center">
@@ -315,6 +355,7 @@ export default function Sidebar({
 
                         <button
                             onClick={async () => {
+                                setIsVisaLoading(true);
                                 try {
                                     const data =
                                         await fetchVisaInfo(
@@ -336,6 +377,7 @@ export default function Sidebar({
                                     );
                                 }
 
+                                setIsVisaLoading(false);
                                 const modal =
                                     document.getElementById(
                                         "my_modal_1"
@@ -344,8 +386,9 @@ export default function Sidebar({
                                 modal?.showModal();
                             }}
                             className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md"
+                            disabled={isVisaLoading}
                         >
-                            Vize durumunu sorgula
+                            {isVisaLoading ? <div className="loading"></div> : "Vize durumunu sorgula"}
                         </button>
 
                         <p className="mt-4 text-[10px] text-slate-500 italic text-center">
