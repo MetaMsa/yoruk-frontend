@@ -43,7 +43,7 @@ export default function Modal({ data }: { data: string }) {
                 </div>
 
                 <p className="py-4 text-center">
-                    {data || "Vize bilgisi yükleniyor..."}
+                    {data ? data || "Vize bilgisi yükleniyor..." : "Viza bilgisi alınamadı."}
                 </p>
 
                 <p>{geminiRes}</p>

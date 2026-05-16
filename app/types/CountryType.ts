@@ -19,3 +19,9 @@ export type CountryInfo = {
     name: string;
     extract: string;
 }
+
+export type VisaInfo = {
+    name: string;
+    passport: number;
+    visa_info: string;
+}

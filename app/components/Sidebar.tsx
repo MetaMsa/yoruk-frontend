@@ -15,7 +15,7 @@ import {
 } from "react";
 import Modal from "./Modal";
 import { useCountryStore } from "../store/countryStore";
-import type { CountryInfo, Country } from "../types/CountryType";
+import type { CountryInfo, Country, VisaInfo } from "../types/CountryType";
 import { TranslationState } from "../types/TranslationType";
 import { PassportType } from "../types/PassportType";
 
@@ -74,7 +74,7 @@ async function fetchVisaInfo({
         throw new Error("Vize bilgisi alınamadı.");
     }
 
-    return response.text();
+    return response.json();
 }
 
 export default function Sidebar({
@@ -100,7 +100,7 @@ export default function Sidebar({
         useCountryStore();
 
     const [visaData, setVisaData] =
-        useState<string>("");
+        useState<VisaInfo | null>(null);
     const [flag, setFlag] =
         useState<string>("");
 
@@ -210,7 +210,7 @@ export default function Sidebar({
         fetchCountryInfo();
 
         return () => abortController.abort();
-    }, [translations.official]);
+    }, [translations.official, translations.common]);
 
     const share = useCallback(async () => {
         const shareData = {
@@ -218,7 +218,7 @@ export default function Sidebar({
             text:
                 "Yörük Seyahat Yardımcısı'ndan " +
                 PASSPORT_TYPES[PASSPORT_MAP[
-                passport
+                    passport
                 ]].label +
                 " pasaportla gidebileceğimiz bir ülke keşfettim bir göz at:" +
                 ` ${process.env.NEXT_PUBLIC_SITE_URL}${encodeURIComponent(clickedD!)}/${encodeURIComponent(passport)}`,
@@ -372,9 +372,7 @@ export default function Sidebar({
 
                                     setVisaData(data);
                                 } catch {
-                                    setVisaData(
-                                        "Vize bilgisi alınamadı."
-                                    );
+                                    setVisaData(null);
                                 }
 
                                 setIsVisaLoading(false);
@@ -399,7 +397,7 @@ export default function Sidebar({
                 )}
             </div>
 
-            <Modal data={visaData} />
+            <Modal data={visaData?.visa_info || ""} />
         </aside>
     );
 }

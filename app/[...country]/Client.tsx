@@ -19,7 +19,7 @@ export default function Client({
         setClickedD(country);
         setPassport(passport as PassportType);
         router.push("/");
-    }, [country, router, setClickedD]);
+    }, [country, passport, router, setClickedD, setPassport]);
 
     return null;
 }

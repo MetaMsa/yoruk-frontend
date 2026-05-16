@@ -10,7 +10,7 @@ export default async function Page({
 }: {
     params: Promise<{ country: string[] }>;
 }) {
-    let { country } = await params;
+    const { country } = await params;
     country[0] = decodeURIComponent(country[0]);
 
     const find = countries.features.find(
