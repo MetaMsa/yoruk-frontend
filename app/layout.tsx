@@ -89,7 +89,7 @@ export default function RootLayout({
             <Link className="link link-hover mx-auto" href="/methodology">
               Metodoloji
             </Link>
-            <Link className="col-span-2 link link-hover mx-auto" href="/api">
+            <Link className="col-span-2 link link-hover mx-auto" href={process.env.BACKEND_URL!}>
               API
             </Link>
           </nav>
