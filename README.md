@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yörük
+https://yoruk.benserhat.com/
 
-## Getting Started
+Yörük, seyahat planlamasını kolaylaştıran bir web uygulamasıdır.
 
-First, run the development server:
+Uygulama; ülke bilgileri, pasaport türüne göre vize gereksinimleri ve seyahat önerileri sunar.
+Vize verileri açık kaynak sitelerden scrape edilerek güncellenir. Ayrıca Gemini API entegrasyonu sayesinde kullanıcıya seyahat edeceği ülkeye özel öneriler sağlanır.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Özellikler
+
+* Pasaport türüne göre vize bilgileri
+* Ülke bazlı seyahat bilgileri
+* Yapay zeka destekli seyahat önerileri
+* Açık kaynak verilerden scraping sistemi
+* Redis destekli önbellekleme yapısı
+* Responsive modern arayüz
+
+## Kullanılan Teknolojiler
+
+### Backend
+
+* Java Spring Boot
+* PostgreSQL
+* Redis
+
+### Frontend
+
+* Next.js
+* TypeScript
+* Tailwind CSS
+
+### Servisler
+
+* Gemini API
+
+## Kurulum
+
+### Backend
+
+```bash id="o1u0wa"
+git clone https://github.com/MetaMsa/yoruk-api
+cd yoruk-api
+setx DB_URL "your_url"
+setx DB_USER "your_user"
+setx DB_PASS "your_pass"
+
+setx REDIS_URL "your_url"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Shell restart sonrası backend'i çalıştırın:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash id="38j6j6"
+./mvnw spring-boot:run
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Frontend
 
-## Learn More
+```bash id="8qg5eq"
+git clone https://github.com/MetaMsa/yoruk-frontend
+cd yoruk-frontend
+cp .env.example .env
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Kullanım
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Gitmek istediğiniz ülkeyi seçin
+2. Pasaport türünüzü belirleyin
+3. Vize gereksinimlerini görüntüleyin
+4. Yapay zeka destekli seyahat önerilerini inceleyin
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Uyarı
 
-## Deploy on Vercel
+Vize bilgileri açık kaynak sitelerden elde edilmektedir.
+Bilgiler güncel olmayabilir. Seyahat öncesinde resmi kaynakların kontrol edilmesi önerilir.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Eklenecek Özellikler
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* Ziyaret edilen ülkeleri kaydetme.
+
+## Katkıda Bulunma
+
+Her türlü katkıya açığız. Hataları bildirmek veya yeni özellik önerileri için pull request gönderebilirsiniz.
+
+## Lisans
+
+Bu proje MIT lisansı ile lisanslanmıştır.
