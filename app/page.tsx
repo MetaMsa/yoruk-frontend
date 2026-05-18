@@ -148,6 +148,7 @@ export default function Home() {
         showAtmosphere={false}
         backgroundColor="rgba(0,0,0,0)"
         labelRotation={100}
+        pointResolution={100}
       />
       {clickedD && (
         <Sidebar

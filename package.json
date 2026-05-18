@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@turf/turf": "^7.3.5",
+    "@vercel/analytics": "^2.0.1",
     "daisyui": "^5.5.19",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",

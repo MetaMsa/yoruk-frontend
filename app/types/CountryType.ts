@@ -25,3 +25,9 @@ export type VisaInfo = {
     passport: number;
     visa_info: string;
 }
+
+export type GeminiRes = {
+    name: string;
+    passport: string;
+    gemini_res: string;
+}

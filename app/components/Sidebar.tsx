@@ -82,7 +82,7 @@ export default function Sidebar({
 }: {
     official: string;
 }) {
-    const { clickedD, setClickedD } =
+    const { clickedD, setClickedD, passport, setPassport } =
         useCountryStore();
 
     const [countryInfo, setCountryInfo] =
@@ -96,8 +96,6 @@ export default function Sidebar({
             common: "",
             official: ""
         });
-    const { passport, setPassport } =
-        useCountryStore();
 
     const [visaData, setVisaData] =
         useState<VisaInfo | null>(null);
@@ -246,12 +244,12 @@ export default function Sidebar({
             className="bg-base-100 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
             role="complementary"
         >
-            <div className="p-4 mt-15">
+            <div className="p-4 mt-20">
                 <div className="flex justify-between mb-3">
                     <button
                         className="p-2 hover:bg-base-200 rounded-full transition-colors group"
                         onClick={share}
-                        aria-label="Kapat"
+                        aria-label="Paylaş"
                     >
                         <Share2
                             size={24}
@@ -290,14 +288,14 @@ export default function Sidebar({
                         </p>
                     </div>
                 ) : (
-                    <nav aria-label="Country Information">
-                        <h2 className="text-xl font-bold mb-4 border-b pb-2 inline-flex gap-3 w-full">
-                            <Image alt="flag" width={32} height={32} src={flag} className="h-10" />
+                    <nav aria-label="Ülke Bilgisi">
+                        <h2 className="text-xl font-bold mb-4 mt-2 border-b pb-2 inline-flex gap-3 w-full">
+                            <Image alt="flag" width={32} height={8} src={flag} />
                             {translations.common}
                         </h2>
 
                         <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
-                            <p className="line-clamp-5 mb-3">
+                            <p className="line-clamp-6 mb-3">
                                 {countryInfo?.extract ||
                                     "Bu ülke hakkında detaylı bilgi bulunmamaktadır."}
                             </p>
@@ -315,7 +313,7 @@ export default function Sidebar({
                             )}
                         </div>
 
-                        <hr className="my-1" />
+                        <hr className="mt-6 mb-3" />
 
                         <div className="mb-4 font-semibold text-sm">
                             Pasaport Türünüz
@@ -353,6 +351,11 @@ export default function Sidebar({
                             )}
                         </div>
 
+                        <p className="my-4 text-[10px] text-slate-500 italic text-center">
+                            * Seçtiğiniz pasaport türüne göre
+                            vize bilgileri gösterilecektir.
+                        </p>
+                            
                         <button
                             onClick={async () => {
                                 setIsVisaLoading(true);
@@ -388,11 +391,6 @@ export default function Sidebar({
                         >
                             {isVisaLoading ? <div className="loading"></div> : "Vize durumunu sorgula"}
                         </button>
-
-                        <p className="mt-4 text-[10px] text-slate-500 italic text-center">
-                            * Seçtiğiniz pasaport türüne göre
-                            vize bilgileri gösterilecektir.
-                        </p>
                     </nav>
                 )}
             </div>

@@ -4,3 +4,13 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+body #bmc-iframe {
+  z-index: 9999 !important;
+  height: 500px !important;
+  width: 25% !important;
+  min-width: 300px !important;
+  min-height: unset !important;
+  max-width: 420px;
+  max-height: 620px;
+}
