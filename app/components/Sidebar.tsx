@@ -218,7 +218,7 @@ export default function Sidebar({
                 PASSPORT_TYPES[PASSPORT_MAP[
                     passport
                 ]].label +
-                " pasaportla gidebileceğimiz bir ülke keşfettim bir göz at:" +
+                " pasaportla gidebileceğimiz bir ülke keşfettim göz at:" +
                 ` ${process.env.NEXT_PUBLIC_SITE_URL}${encodeURIComponent(clickedD!)}/${encodeURIComponent(passport)}`,
         };
         if (navigator.share) {
