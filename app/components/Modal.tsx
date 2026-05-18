@@ -59,7 +59,7 @@ export default function Modal({ data }: { data: string }) {
 
     return (
         <dialog id="my_modal_1" className="modal">
-            <div className="modal-box">
+            <div className="modal-box  max-h-96">
                 <div className="flex justify-between">
                     <h3 className="font-bold text-lg">Vize Bilgisi</h3>
                     <button onClick={fetchGeminiRes} className={`btn btn-outline ${loading ? "loading" : ""}`} disabled={loading || clickedD === "Republic of Turkey" || (geminiRes ? true : false)}>
