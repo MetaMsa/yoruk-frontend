@@ -6,4 +6,7 @@ export type CountryStore = {
 
     passport: PassportType;
     setPassport: (value: PassportType) => void;
+
+    visitedCountries: string[];
+    setVisitedCountries: (value: string) => void;
 }

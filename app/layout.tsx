@@ -6,7 +6,8 @@ import Image from "next/image";
 import Toggle from "./components/ThemeToggle";
 import { Mail } from "lucide-react";
 import SearchBar from "./components/SearchBar";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { Map } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,6 +55,7 @@ export default function RootLayout({
           data-y_margin="70"
           defer
         ></script>
+          <link rel="icon" type="image/x-icon" href="/YÖRÜK.svg" />
       </head>
       <body className="min-h-full flex flex-col overflow-hidden">
         <Analytics />
@@ -69,7 +71,16 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="flex justify-between w-full sm:footer-horizontal footer-center bg-base-300 text-base-content p-4 fixed bottom-0 border-t">
-          <Toggle />
+          <div className="flex text-xs gap-3">
+            <Toggle />
+
+            <Link
+              href={"/map"}
+              className="my-auto"
+            >
+              <Map />
+            </Link>
+          </div>
           <nav className="my-auto grid grid-cols-2 justify-center text-xs text-center">
             <Link
               className="link link-hover mx-auto"

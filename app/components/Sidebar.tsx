@@ -4,7 +4,8 @@ import {
     CircleX,
     Loader2,
     AlertCircle,
-    Share2
+    Share2,
+    Bookmark
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -82,7 +83,7 @@ export default function Sidebar({
 }: {
     official: string;
 }) {
-    const { clickedD, setClickedD, passport, setPassport } =
+    const { clickedD, setClickedD, passport, setPassport, visitedCountries, setVisitedCountries } =
         useCountryStore();
 
     const [countryInfo, setCountryInfo] =
@@ -235,6 +236,10 @@ export default function Sidebar({
         localStorage.removeItem("clickedD");
     }, [setClickedD]);
 
+    const save = useCallback(() => {
+        setVisitedCountries(clickedD!);
+    }, [clickedD]);
+
     if (!translations.common) {
         return null;
     }
@@ -250,6 +255,7 @@ export default function Sidebar({
                         className="p-2 hover:bg-base-200 rounded-full transition-colors group"
                         onClick={share}
                         aria-label="Paylaş"
+                        title="Paylaş"
                     >
                         <Share2
                             size={24}
@@ -258,8 +264,21 @@ export default function Sidebar({
                     </button>
                     <button
                         className="p-2 hover:bg-base-200 rounded-full transition-colors group"
+                        onClick={save}
+                        aria-label="Kaydet"
+                        title="Bu ülkeyi ziyaret ettim olarak kaydet"
+                    >
+                        <Bookmark
+                            size={24}
+                            className="text-slate-500 group-hover:text-red-500 transition-colors"
+                            fill={visitedCountries.includes(clickedD!) ? "currentColor" : "none"}
+                        />
+                    </button>
+                    <button
+                        className="p-2 hover:bg-base-200 rounded-full transition-colors group"
                         onClick={closeSidebar}
                         aria-label="Kapat"
+                        title="Kapat"
                     >
                         <CircleX
                             size={24}

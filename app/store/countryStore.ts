@@ -28,5 +28,20 @@ export const useCountryStore = create<CountryStore>((set) => ({
         if (typeof window !== "undefined") {
             localStorage.setItem("passport", value || "Ordinary");
         }
-    }
+    },
+
+    visitedCountries: typeof window !== "undefined"
+        ? JSON.parse(localStorage.getItem("visitedCountries") || "[]") as string[]
+        : [] as string[],
+
+    setVisitedCountries: (value: string) => {
+        if (typeof window !== "undefined") {
+            const currentCountries = JSON.parse(localStorage.getItem("visitedCountries") || "[]") as string[];
+            const updatedCountries = currentCountries.includes(value)
+                ? currentCountries.filter((item: string) => item !== value)
+                : [...currentCountries, value];
+            localStorage.setItem("visitedCountries", JSON.stringify(updatedCountries));
+            set({ visitedCountries: updatedCountries });
+        }
+    },
 }));
