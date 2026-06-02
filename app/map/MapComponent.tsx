@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import dataset from "@/dataset.json";
-import type { FeatureCollection } from "geojson";
 import html2canvas from 'html2canvas-pro';
 import {
   ComposableMap,

@@ -238,7 +238,7 @@ export default function Sidebar({
 
     const save = useCallback(() => {
         setVisitedCountries(clickedD!);
-    }, [clickedD]);
+    }, [clickedD, setVisitedCountries]);
 
     if (!translations.common) {
         return null;
