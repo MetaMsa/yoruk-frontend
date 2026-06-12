@@ -41,7 +41,7 @@ export default function SearchBar() {
         const fetchCountries = async () => {
             try {
                 const res = await fetch(
-                    `https://restcountries.com/v3.1/translation/${searchText}`,
+                    `/api/restcountries/translations/${searchText}`,
                     { signal: controller.signal }
                 );
 

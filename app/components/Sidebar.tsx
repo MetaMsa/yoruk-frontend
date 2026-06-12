@@ -135,23 +135,23 @@ export default function Sidebar({
                 return;
             }
 
-            const res = await fetch(`https://restcountries.com/v3.1/name/${official}`);
+            const res = await fetch(`/api/restcountries/name/${official}`);
 
             if (!res.ok) return;
 
             const data: Country[] = await res.json();
 
-            if (data[0].translations?.tur?.common === "Falkland (Malvina) Adaları") {
-                data[0].translations.tur.common = "Falkland Adaları";
-                data[0].translations.tur.official = "Falkland Adaları";
+            if (data[0].names.translations?.tur?.common === "Falkland (Malvina) Adaları") {
+                data[0].names.translations.tur.common = "Falkland Adaları";
+                data[0].names.translations.tur.official = "Falkland Adaları";
             }
 
             setTranslations({
-                common: data[0].translations?.tur?.common || "",
-                official: data[0].translations?.tur?.official || ""
+                common: data[0].names.translations?.tur?.common || "",
+                official: data[0].names.translations?.tur?.official || ""
             })
 
-            setFlag(data[0].flags.svg);
+            setFlag(data[0].flag.url_svg);
         };
 
         fetchTranslation();
@@ -309,7 +309,7 @@ export default function Sidebar({
                 ) : (
                     <nav aria-label="Ülke Bilgisi">
                         <h2 className="text-xl font-bold mb-4 mt-2 border-b pb-2 inline-flex gap-3 w-full">
-                            <Image alt="flag" width={32} height={8} src={flag} />
+                            {<Image alt="flag" width={32} height={8} src={flag} />}
                             {translations.common}
                         </h2>
 

@@ -1,17 +1,17 @@
 export type Country = {
     cca2: string;
-    name: {
+    names: {
         common: string;
         official: string;
-    };
-    translations?: {
-        tur?: {
-            common?: string;
-            official?: string;
+        translations?: {
+            tur?: {
+                common?: string;
+                official?: string;
+            };
         };
     };
-    flags: {
-        svg: string;
+    flag: {
+        url_svg: string;
     }
 };
 
