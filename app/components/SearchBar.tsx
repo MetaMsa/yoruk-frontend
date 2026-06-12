@@ -50,7 +50,9 @@ export default function SearchBar() {
                 const data: Country[] = await res.json();
 
                 const northernCyprus: Country = {
-                    cca2: "CT",
+                    codes: {
+                        alpha_2: "CT"
+                    },
                     names: {
                         common: "Northern Cyprus",
                         official: "Turkish Republic of Northern Cyprus",   
@@ -83,7 +85,7 @@ export default function SearchBar() {
                 }
 
                 const filtered = enhancedData.filter((c) => {
-                    const code = c.cca2?.toUpperCase();
+                    const code = c.codes.alpha_2?.toUpperCase();
 
                     return (
                         codes.postal.includes(code) ||

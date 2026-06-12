@@ -1,5 +1,7 @@
 export type Country = {
-    cca2: string;
+    codes: {
+        alpha_2: string;
+    }
     names: {
         common: string;
         official: string;
