@@ -118,7 +118,7 @@ export default function RootLayout({
               className="mx-1 sm:mx-5"
               href={"https://www.linkedin.com/in/mehmet-serhat-aslan-58272b28a"}
             >
-              <img width={24} height={24} alt="in-signature" src="https://upload.wikimedia.org/wikipedia/commons/7/7e/LinkedIn_PNG16.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail_unscaled" />
+              <Image width={24} height={24} alt="in-signature" src="https://upload.wikimedia.org/wikipedia/commons/7/7e/LinkedIn_PNG16.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail_unscaled" />
             </Link>
             <Link
               className="mx-1 sm:mx-5"

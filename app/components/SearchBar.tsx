@@ -51,18 +51,18 @@ export default function SearchBar() {
 
                 const northernCyprus: Country = {
                     cca2: "CT",
-                    name: {
+                    names: {
                         common: "Northern Cyprus",
-                        official: "Turkish Republic of Northern Cyprus"
-                    },
-                    translations: {
-                        tur: {
-                            common: "Kuzey Kıbrıs",
-                            official: "Kuzey Kıbrıs Türk Cumhuriyeti"
+                        official: "Turkish Republic of Northern Cyprus",   
+                        translations: {
+                            tur: {
+                                common: "Kuzey Kıbrıs",
+                                official: "Kuzey Kıbrıs Türk Cumhuriyeti"
+                            }
                         }
                     },
-                    flags: {
-                        svg: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Flag_of_the_Turkish_Republic_of_Northern_Cyprus.svg"
+                    flag: {
+                        url_svg: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Flag_of_the_Turkish_Republic_of_Northern_Cyprus.svg"
                     }
                 };
 
@@ -77,9 +77,9 @@ export default function SearchBar() {
                     enhancedData.push(northernCyprus);
                 }
 
-                if (data[0].translations?.tur?.common === "Falkland (Malvina) Adaları") {
-                    data[0].translations.tur.common = "Falkland Adaları";
-                    data[0].translations.tur.official = "Falkland Adaları";
+                if (data[0].names.translations?.tur?.common === "Falkland (Malvina) Adaları") {
+                    data[0].names.translations.tur.common = "Falkland Adaları";
+                    data[0].names.translations.tur.official = "Falkland Adaları";
                 }
 
                 const filtered = enhancedData.filter((c) => {
@@ -110,7 +110,7 @@ export default function SearchBar() {
         if (e.key === "Enter") {
             const first = rawCountries[0];
             if (first) {
-                setClickedD(first.name.official);
+                setClickedD(first.names.official);
             }
         }
     };
@@ -136,18 +136,18 @@ export default function SearchBar() {
                     ) : (
                         rawCountries.map((country) => (
                             <li
-                                key={country.name.official}
+                                key={country.names.official}
                                 className="py-2 px-2"
                             >
                                 <button
                                     className="link truncate max-w-40"
                                     onClick={() =>
-                                        setClickedD(country.name.official)
+                                        setClickedD(country.names.official)
                                     }
                                     onMouseDown={(e) => e.preventDefault()}
                                 >
-                                    {country.translations?.tur?.common ??
-                                        country.name.common}
+                                    {country.names.translations?.tur?.common ??
+                                        country.names.common}
                                 </button>
                             </li>
                         ))
