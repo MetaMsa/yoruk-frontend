@@ -59,7 +59,7 @@ export default function Home() {
         ref={globeRef}
         polygonsData={countries.features}
         polygonCapColor={(d: any) => {
-          if (d.properties.FORMAL_EN === "Republic of Turkey") {
+          if (d.properties.FORMAL_EN === "Republic of Türkiye") {
             return "rgba(227, 10, 23, 1)";
           }
 
