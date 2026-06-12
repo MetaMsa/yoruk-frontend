@@ -14,7 +14,7 @@ export async function GET(
     req.headers.get("x-real-ip") ??
     "unknown";
 
-  if (!(await isAllowed(ip, 12)))
+  if (!(await isAllowed(ip, 100)))
     return NextResponse.json(
       { error: "Çok fazla istek yapıldı." },
       { status: 429 },
