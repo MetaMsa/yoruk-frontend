@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model countryNames {
+  id                         Int    @id @default(autoincrement())
+  country_name String @unique
+  country Json
+  last_update DateTime
+}
+
+model countryTranslations {
+  id          Int    @id @default(autoincrement())
+  text_search String @unique
+  countries   Json
+  last_update DateTime
+}

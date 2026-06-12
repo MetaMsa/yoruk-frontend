@@ -305,7 +305,7 @@ export default function Sidebar({
                 ) : (
                     <nav aria-label="Ülke Bilgisi">
                         <h2 className="text-xl font-bold mb-4 mt-2 border-b pb-2 inline-flex gap-3 w-full">
-                            {<Image alt="flag" width={32} height={8} src={flag} />}
+                            {flag && <Image alt="flag" width={32} height={8} src={flag} />}
                             {translations.common ?? official}
                         </h2>
 
