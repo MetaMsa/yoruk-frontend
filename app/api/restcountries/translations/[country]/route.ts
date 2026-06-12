@@ -18,7 +18,7 @@ export async function isAllowed(ip: string, limit: number){
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { country: string } }
+    { params }: { params: Promise<{ country: string }> }
 ) {
     const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0] ??
