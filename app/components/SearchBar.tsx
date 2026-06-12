@@ -68,7 +68,25 @@ export default function SearchBar() {
                     }
                 };
 
-                const enhancedData = [...data];
+                const enhancedData = data.map((d) => {
+                 if (d.names.translations?.tur?.common === "Falkland (Malvina) Adaları") {
+                    return {
+                      ...d,
+                      names: {
+                        ...d.names,
+                        translations: {
+                         ...d.names.translations,
+                          tur: {
+                            ...d.names.translations.tur,
+                            common: "Falkland Adaları",
+                            official: "Falkland Adaları",
+                          },
+                        },
+                      },
+                    };
+                  }
+                  return d;
+                });
 
                 if (
                     "kuzey kıbrıs".includes(searchText) ||
@@ -77,11 +95,6 @@ export default function SearchBar() {
                     "cyprus".includes(searchText)
                 ) {
                     enhancedData.push(northernCyprus);
-                }
-
-                if (data[0].names.translations?.tur?.common === "Falkland (Malvina) Adaları") {
-                    data[0].names.translations.tur.common = "Falkland Adaları";
-                    data[0].names.translations.tur.official = "Falkland Adaları";
                 }
 
                 const filtered = enhancedData.filter((c) => {

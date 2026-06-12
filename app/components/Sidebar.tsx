@@ -240,10 +240,6 @@ export default function Sidebar({
         setVisitedCountries(clickedD!);
     }, [clickedD, setVisitedCountries]);
 
-    if (!translations.common) {
-        return null;
-    }
-
     return (
         <aside
             className="bg-base-100 border-l border-slate-300 dark:border-neutral-700 w-full h-full fixed top-0 right-0 max-w-64 z-50 overflow-y-auto shadow-2xl transition-transform"
@@ -310,7 +306,7 @@ export default function Sidebar({
                     <nav aria-label="Ülke Bilgisi">
                         <h2 className="text-xl font-bold mb-4 mt-2 border-b pb-2 inline-flex gap-3 w-full">
                             {<Image alt="flag" width={32} height={8} src={flag} />}
-                            {translations.common}
+                            {translations.common ?? official}
                         </h2>
 
                         <div className="text-xs leading-relaxed text-slate-800 dark:text-slate-400">
@@ -319,7 +315,7 @@ export default function Sidebar({
                                     "Bu ülke hakkında detaylı bilgi bulunmamaktadır."}
                             </p>
 
-                            {countryInfo?.name && (
+                            {countryInfo?.name && countryInfo?.extract && (
                                 <Link
                                     href={`https://tr.wikipedia.org/wiki/${encodeURIComponent(
                                         countryInfo.name
@@ -406,7 +402,7 @@ export default function Sidebar({
                                 modal?.showModal();
                             }}
                             className="btn btn-outline w-full active:scale-[0.98] font-medium py-2.5 px-4 rounded-lg transition-all shadow-md"
-                            disabled={isVisaLoading}
+                            disabled={isVisaLoading || !translations.common || !translations.official}
                         >
                             {isVisaLoading ? <div className="loading"></div> : "Vize durumunu sorgula"}
                         </button>
