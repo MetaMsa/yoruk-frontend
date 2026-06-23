@@ -153,7 +153,7 @@ export default function Home() {
       {clickedD && (
         <Sidebar
           key={clickedD}
-          official={selectedCountry?.properties?.FORMAL_EN}
+          official={clickedD}
         />
       )}
       <AltitudeToggle globeRef={globeRef} />
