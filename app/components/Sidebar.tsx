@@ -155,7 +155,7 @@ export default function Sidebar({
         };
 
         fetchTranslation();
-    }, [official]);
+    }, [official, clickedD]);
 
     useEffect(() => {
         if (!translations.common) return;
@@ -209,7 +209,7 @@ export default function Sidebar({
         fetchCountryInfo();
 
         return () => abortController.abort();
-    }, [translations.official, translations.common]);
+    }, [translations.official, translations.common, clickedD]);
 
     const share = useCallback(async () => {
         const shareData = {
