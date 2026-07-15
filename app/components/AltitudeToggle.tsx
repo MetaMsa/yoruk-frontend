@@ -29,10 +29,10 @@ export default function AltitudeToggle({ globeRef }: { globeRef: RefObject<Globe
 
     return (
         <div className="absolute bottom-22 left-2 z-10 flex flex-col gap-2">
-            <button className="btn btn-outline" onClick={() => reduceAltitude()}>
+            <button className="btn btn-outline" onClick={reduceAltitude} aria-label="Yakınlaştır" title="Yakınlaştır">
                 +
             </button>
-            <button className="btn btn-outline" onClick={() => increaseAltitude()}>
+            <button className="btn btn-outline" onClick={increaseAltitude} aria-label="Uzaklaştır" title="Uzaklaştır">
                 -
             </button>
         </div>

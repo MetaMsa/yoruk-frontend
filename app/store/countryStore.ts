@@ -2,6 +2,19 @@ import { create } from "zustand";
 import { CountryStore } from "../types/StoreType";
 import { PassportType } from "../types/PassportType";
 
+function readVisitedCountries(): string[] {
+    if (typeof window === "undefined") return [];
+
+    try {
+        const stored = JSON.parse(localStorage.getItem("visitedCountries") || "[]");
+        return Array.isArray(stored) && stored.every((country) => typeof country === "string")
+            ? stored
+            : [];
+    } catch {
+        return [];
+    }
+}
+
 export const useCountryStore = create<CountryStore>((set) => ({
     clickedD: null,
 
@@ -30,13 +43,11 @@ export const useCountryStore = create<CountryStore>((set) => ({
         }
     },
 
-    visitedCountries: typeof window !== "undefined"
-        ? JSON.parse(localStorage.getItem("visitedCountries") || "[]") as string[]
-        : [] as string[],
+    visitedCountries: readVisitedCountries(),
 
     setVisitedCountries: (value: string) => {
         if (typeof window !== "undefined") {
-            const currentCountries = JSON.parse(localStorage.getItem("visitedCountries") || "[]") as string[];
+            const currentCountries = readVisitedCountries();
             const updatedCountries = currentCountries.includes(value)
                 ? currentCountries.filter((item: string) => item !== value)
                 : [...currentCountries, value];

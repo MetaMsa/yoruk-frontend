@@ -410,7 +410,7 @@ export default function Sidebar({
                 )}
             </div>
 
-            <Modal data={visaData?.visa_info || ""} />
+            <Modal key={`${clickedD}-${passport}`} data={visaData?.visa_info || ""} />
         </aside>
     );
 }

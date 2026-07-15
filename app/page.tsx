@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
+import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import dataset from "@/dataset.json";
 import centerMedian from "@turf/center-median";
 import area from "@turf/area";
@@ -16,6 +16,23 @@ const Globe = dynamic(() => import("react-globe.gl"), {
 });
 
 const countries = (dataset as unknown) as FeatureCollection<Geometry, GeoJsonProperties>;
+const DEFAULT_VIEW = { lat: 38.95, lng: 34.86, altitude: 1.8 };
+const MIN_ALTITUDE = 0.6;
+const MAX_ALTITUDE = 2.5;
+
+function getCountryView(country: Feature<Geometry, GeoJsonProperties>) {
+  const centered = centerMedian({
+    type: "FeatureCollection",
+    features: [country],
+  });
+  const [lng, lat] = centered.geometry.coordinates;
+
+  return {
+    lat,
+    lng,
+    altitude: Math.max(MIN_ALTITUDE, Math.min(MAX_ALTITUDE, area(country) / 1_000_000_000_000)),
+  };
+}
 
 export default function Home() {
   const [hoverAdmin, setHoverAdmin] = useState<string | null>(null);
@@ -32,25 +49,7 @@ export default function Home() {
   useEffect(() => {
     if (!globeRef.current || !selectedCountry) return;
 
-    const centered = centerMedian({
-      type: "FeatureCollection",
-      features: [selectedCountry],
-    });
-
-    const [lng, lat] = centered.geometry.coordinates;
-    const polygonArea = area(selectedCountry);
-
-    globeRef.current.pointOfView(
-      {
-        lat,
-        lng,
-        altitude: Math.max(
-          0.6,
-          Math.min(2.5, polygonArea / 1000000000000)
-        ),
-      },
-      1500
-    );
+    globeRef.current.pointOfView(getCountryView(selectedCountry), 1500);
   }, [selectedCountry]);
 
   return (
@@ -58,16 +57,19 @@ export default function Home() {
       <Globe
         ref={globeRef}
         polygonsData={countries.features}
-        polygonCapColor={(d: any) => {
-          if (d.properties.FORMAL_EN === "Republic of Türkiye") {
+        polygonCapColor={(d) => {
+          const country = d as Feature<Geometry, GeoJsonProperties>;
+          const formalName = country.properties?.FORMAL_EN;
+
+          if (formalName === "Republic of Türkiye") {
             return "rgba(227, 10, 23, 1)";
           }
 
-          if (d.properties.FORMAL_EN === clickedD) {
+          if (formalName === clickedD) {
             return "rgb(0, 81, 255)";
           }
 
-          if (d.properties.FORMAL_EN === hoverAdmin) {
+          if (formalName === hoverAdmin) {
             return "rgba(59, 130, 246, 1)";
           }
 
@@ -75,29 +77,27 @@ export default function Home() {
         }}
         polygonStrokeColor={() => "#ffffff"}
         polygonSideColor={() => "rgba(0,0,0,0.15)"}
-        polygonAltitude={(d: any) =>
-          d.properties.FORMAL_EN === hoverAdmin ? 0.05 : 0
+        polygonAltitude={(d) =>
+          (d as Feature<Geometry, GeoJsonProperties>).properties?.FORMAL_EN === hoverAdmin ? 0.05 : 0
         }
-        onPolygonHover={(polygon: any) => {
+        onPolygonHover={(polygon) => {
           if (!polygon) {
             setHoverAdmin(null);
             return;
           }
 
-          setHoverAdmin(polygon.properties.FORMAL_EN);
+          setHoverAdmin((polygon as Feature<Geometry, GeoJsonProperties>).properties?.FORMAL_EN ?? null);
         }}
-        onPolygonClick={(polygon: any) => {
-          setClickedD(polygon.properties.FORMAL_EN);
+        onPolygonClick={(polygon) => {
+          const formalName = (polygon as Feature<Geometry, GeoJsonProperties>).properties?.FORMAL_EN;
+          if (formalName) setClickedD(formalName);
         }}
         onGlobeReady={() => {
           const saved = localStorage.getItem("clickedD");
 
           if (!saved) {
             requestAnimationFrame(() => {
-              globeRef.current?.pointOfView(
-                { lat: 38.95, lng: 34.86, altitude: 1.8 },
-                1500
-              );
+              globeRef.current?.pointOfView(DEFAULT_VIEW, 1500);
             });
             return;
           }
@@ -108,39 +108,17 @@ export default function Home() {
 
           if (!found) {
             requestAnimationFrame(() => {
-              globeRef.current?.pointOfView(
-                {
-                  lat: 38.95,
-                  lng: 34.86,
-                  altitude: 1.8
-                },
-                1500
-              );
+              globeRef.current?.pointOfView(DEFAULT_VIEW, 1500);
             });
             return;
           }
-
-          const centered = centerMedian({
-            type: "FeatureCollection",
-            features: [found],
-          });
-
-          const [lng, lat] = centered.geometry.coordinates;
-          const polygonArea = area(found);
 
           if (found?.properties?.FORMAL_EN) {
             setClickedD(found.properties.FORMAL_EN);
           }
 
           requestAnimationFrame(() => {
-            globeRef.current?.pointOfView(
-              {
-                lat,
-                lng,
-                altitude: Math.max(0.6, Math.min(2.5, polygonArea / 1000000000000)),
-              },
-              1500
-            );
+            globeRef.current?.pointOfView(getCountryView(found), 1500);
           });
         }}
         globeOffset={clickedD ? [-125, 0] : [0, 0]}

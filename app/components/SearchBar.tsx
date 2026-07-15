@@ -30,7 +30,10 @@ export default function SearchBar() {
     const { setClickedD } = useCountryStore();
 
     const searchHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchText(e.target.value.toLowerCase());
+        const value = e.target.value.toLowerCase();
+        setSearchText(value);
+
+        if (!value) setRawCountries([]);
     };
 
     useEffect(() => {
@@ -116,9 +119,12 @@ export default function SearchBar() {
             }
         };
 
-        fetchCountries();
+        const debounceId = window.setTimeout(fetchCountries, 200);
 
-        return () => controller.abort();
+        return () => {
+            window.clearTimeout(debounceId);
+            controller.abort();
+        };
     }, [searchText]);
 
     const keyHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -138,6 +144,7 @@ export default function SearchBar() {
                 onFocus={() => setOpen(true)}
                 onBlur={() => setOpen(false)}
                 type="search"
+                value={searchText}
                 className="input border my-auto rounded-xl text-center w-full"
                 placeholder="Ülke ara..."
             />

@@ -13,11 +13,7 @@ export default function Modal({ data }: { data: string }) {
     const controllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
-        setGeminiRes(null);
-
-        if (controllerRef.current) {
-            controllerRef.current.abort();
-        }
+        return () => controllerRef.current?.abort();
     }, [clickedD, passport]);
 
     const fetchGeminiRes = async () => {
@@ -40,8 +36,8 @@ export default function Modal({ data }: { data: string }) {
 
             const data = await response.json();
             setGeminiRes(data);
-        } catch (err: any) {
-            if (err.name === "AbortError") return;
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") return;
             console.error(err);
         }
         finally {

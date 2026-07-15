@@ -10,7 +10,7 @@ import {
 } from '@vnedyalk0v/react19-simple-maps';
 
 export default function MapComponent({ visitedCountries }: { visitedCountries: string[] }) {
-  const mapRef = useRef<HTMLSpanElement | null>(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
   const handleDownload = async () => {
@@ -47,7 +47,7 @@ export default function MapComponent({ visitedCountries }: { visitedCountries: s
         Burada ziyaret ettiğiniz ülkeleri görebilir ve png formatında indirebilirsiniz.
       </p>
 
-      <span ref={mapRef}>
+      <div ref={mapRef}>
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
@@ -75,7 +75,7 @@ export default function MapComponent({ visitedCountries }: { visitedCountries: s
         <p className="text-center text-xs absolute top-100 left-0 right-0 z-500 bg-base-300 p-2 m-auto w-fit rounded shadow-sm opacity-80">
           Ziyaret ettiğiniz ülkelerin sayısı: {visitedCountries.length} / {dataset.features.length}
         </p>
-      </span>
+      </div>
 
       <button
         onClick={handleDownload}

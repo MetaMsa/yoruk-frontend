@@ -4,10 +4,9 @@ import "./globals.css";
 import Link from "next/link";
 import Image from "next/image";
 import Toggle from "./components/ThemeToggle";
-import { Mail } from "lucide-react";
+import { Mail, Map } from "lucide-react";
 import SearchBar from "./components/SearchBar";
 import { Analytics } from "@vercel/analytics/next";
-import { Map } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +33,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html
       lang="tr"
@@ -54,30 +52,31 @@ export default function RootLayout({
           data-x_margin="10"
           data-y_margin="70"
           defer
-        ></script>
-          <link rel="icon" type="image/x-icon" href="/YÖRÜK.svg" />
+        />
+        <link rel="icon" type="image/x-icon" href="/YÖRÜK.svg" />
       </head>
       <body className="min-h-full flex flex-col overflow-hidden">
         <Analytics />
         <header>
           <nav className="flex justify-between navbar bg-base-300 shadow-sm border-b">
-            <Link href={"/"}>
-              <Image className="rounded-full border border-black" src="/YÖRÜK.svg" alt="Logo" width={64} height={64} />
+            <Link href="/">
+              <Image
+                className="rounded-full border border-black"
+                src="/YÖRÜK.svg"
+                alt="Logo"
+                width={64}
+                height={64}
+              />
             </Link>
             <SearchBar />
           </nav>
         </header>
-        <main className="my-auto">
-          {children}
-        </main>
+        <main className="my-auto">{children}</main>
         <footer className="flex justify-between w-full sm:footer-horizontal footer-center bg-base-300 text-base-content p-4 fixed bottom-0 border-t">
           <div className="flex text-xs gap-3">
             <Toggle />
 
-            <Link
-              href={"/map"}
-              className="my-auto"
-            >
+            <Link href="/map" className="my-auto" aria-label="Ziyaret edilen ülkeler haritası">
               <Map />
             </Link>
           </div>
@@ -88,7 +87,7 @@ export default function RootLayout({
             >
               Hakkımda
             </Link>
-            <Link className="link link-hover mx-autor" href="/disclaimer">
+            <Link className="link link-hover mx-auto" href="/disclaimer">
               Sorumluluk Reddi
             </Link>
             <Link
@@ -107,22 +106,22 @@ export default function RootLayout({
           <div className="text-sm grid grid-cols-2">
             <Link
               className="mx-1 sm:mx-5"
-              href={"https://www.youtube.com/@metamsa"}
+              href="https://www.youtube.com/@metamsa"
             >
               <Image width={24} height={24} alt="YouTube full-color icon (2024)" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/YouTube_full-color_icon_%282024%29.svg/960px-YouTube_full-color_icon_%282024%29.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" />
             </Link>
-            <Link className="mx-1 sm:mx-5 bg-white rounded-2xl" href={"https://github.com/MetaMsa"}>
+            <Link className="mx-1 sm:mx-5 bg-white rounded-2xl" href="https://github.com/MetaMsa">
               <Image width={24} height={24} alt="GitHub mark (2024)" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Octicons-mark-github.svg/960px-Octicons-mark-github.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" />
             </Link>
             <Link
               className="mx-1 sm:mx-5"
-              href={"https://www.linkedin.com/in/mehmet-serhat-aslan-58272b28a"}
+              href="https://www.linkedin.com/in/mehmet-serhat-aslan-58272b28a"
             >
               <Image width={24} height={24} alt="in-signature" src="https://upload.wikimedia.org/wikipedia/commons/7/7e/LinkedIn_PNG16.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail_unscaled" />
             </Link>
             <Link
               className="mx-1 sm:mx-5"
-              href={"mailto:mserhataslan@hotmail.com"}
+              href="mailto:mserhataslan@hotmail.com"
             >
               <Mail width={24} height={24} />
             </Link>
