@@ -248,7 +248,7 @@ export default function Sidebar({
             <div className="p-4 mt-20">
                 <div className="flex justify-between mb-3">
                     <button
-                        className="p-2 hover:bg-base-200 rounded-full transition-colors group"
+                        className="p-2 cursor-pointer hover:bg-base-200 rounded-full transition-colors group"
                         onClick={share}
                         aria-label="Paylaş"
                         title="Paylaş"
@@ -259,7 +259,7 @@ export default function Sidebar({
                         />
                     </button>
                     <button
-                        className="p-2 hover:bg-base-200 rounded-full transition-colors group"
+                        className="p-2 cursor-pointer hover:bg-base-200 rounded-full transition-colors group"
                         onClick={save}
                         aria-label="Kaydet"
                         title="Bu ülkeyi ziyaret ettim olarak kaydet"
@@ -271,7 +271,7 @@ export default function Sidebar({
                         />
                     </button>
                     <button
-                        className="p-2 hover:bg-base-200 rounded-full transition-colors group"
+                        className="p-2 cursor-pointer hover:bg-base-200 rounded-full transition-colors group"
                         onClick={closeSidebar}
                         aria-label="Kapat"
                         title="Kapat"
@@ -345,7 +345,7 @@ export default function Sidebar({
                                                 type.id
                                             )
                                         }
-                                        className={`relative flex flex-col items-center transition-all rounded-lg border-2 ${passport === type.id
+                                        className={`relative flex flex-col items-center transition-all cursor-pointer rounded-lg border-2 ${passport === type.id
                                             ? "border-base-500"
                                             : "border-transparent hover:border-base-300"
                                             }`}
