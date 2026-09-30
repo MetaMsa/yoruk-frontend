@@ -14,3 +14,15 @@ body #bmc-iframe {
   max-width: 420px;
   max-height: 620px;
 }
+
+.clickable {
+  cursor: pointer !important;
+}
+
+canvas {
+  cursor: grab !important;
+}
+
+canvas:active {
+  cursor: grabbing !important;
+}
